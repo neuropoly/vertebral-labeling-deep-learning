@@ -140,3 +140,8 @@ class GeneralizedDiceLoss(nn.Module):
         denominator = ((input + target).sum(-1) * class_weights).sum()
 
         return 1. - 2. * intersect / denominator.clamp(min=self.epsilon)
+
+
+def loss_l1(x, y):
+    return torch.sum((y - x))
+
