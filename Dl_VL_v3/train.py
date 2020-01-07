@@ -5,15 +5,18 @@ from losses import *
 import numpy as np
 import copy
 import torch
+import yaml
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 from torch import autograd, optim
 import torch.backends.cudnn as cudnn
 import torchvision.utils as vutils
 
-path = '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
+#import configuration
+conf=yaml.load(open('config.yml'))
+path = conf['path_to_data']
 print('load dataset')
-ds = load_Data_Bids2Array(path, mode=2)
+ds = load_Data_Bids2Array(path, mode=conf['mode'])
 print('creating heatmap')
 full = extract_groundtruth_heatmap(ds)
 
@@ -38,12 +41,14 @@ print('generating model')
 model = m.ModelCountception_v2(inplanes=1, outplanes=1)
 model = model.cuda()
 model = model.double()
-
+if conf['previous_weights']!='':
+    print('loading previous wights')
+    model.load_state_dict(torch.load(conf['previous_weights'])['model_weights'])
 criterion = loss_l1
 solver = optim.Adam(model.parameters(), lr=0.00005)
 loss_fcd = FocalDiceLoss()
 print('training')
-for epoch in range(1000):
+for epoch in range(conf['num_epochs']):
     for idx, (input, target) in enumerate(train_loader):
         input = input.cuda()
         target = target.cuda()
@@ -70,14 +75,19 @@ for epoch in range(1000):
             input = input.cuda()
             target = target.cuda()
             output = model.forward(input)
-            if (epoch + 1) % 1 == 0:
+            if (epoch + 1) % 10 == 0:
                 heat = output.data.cpu().numpy()
                 plt.imshow(heat[0, 0, :, :] > 0.5)
                 plt.show()
+                plt.savefig('heatmap '+ str(epoch)+'.png')
             val_loss.append(criterion(output, target).item())
 
         print("Epoch", epoch, "- Validation Loss:", np.mean(val_loss))
 
-    if (epoch + 1) % 50 == 0:
+    if (epoch + 1) % 2 == 0:
+        if conf['saved_model'] != '':
+            name=conf['saved_model']
+        else :
+            name='Countception_train_defaultsave.model'
         state = {'model_weights': model.state_dict()}
-        torch.save(state, "checkpoints/Countception_L1run.model".format(epoch))
+        torch.save(state, name)

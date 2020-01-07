@@ -1,0 +1,5 @@
+num_epochs: 100
+mode: 2 #0 for both t1 and t2 , 1 for t1 only , 2 for t2 only
+path_to_data: '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
+saved_model: 'checkpoints/Countception_L1run.model' # leave '' will use a default value 
+previous_weights: 'checkpoints/Countception_L1run.model' #Leave '' if you don't want to load , or don't have previous weights

@@ -10,7 +10,7 @@ def normalize(arr):
     return ((arr - mi) / (ma - mi))
 
 
-def label2MaskMap_2(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
+def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
     """
     Generate a Mask map from the coordenates
     :param M, N: dimension of output
@@ -66,7 +66,7 @@ def label2MaskMap_2(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
 def extract_all(list_coord_label, shape_im=(1, 150, 200)):
     final = np.zeros(shape_im)
     for x in list_coord_label:
-        train_lbs_tmp_mask = label2MaskMap_2(x, shape_im)
+        train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
         for w in range(shape_im[1]):
             for h in range(shape_im[2]):
                 final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
