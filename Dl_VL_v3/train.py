@@ -12,8 +12,8 @@ from torch import autograd, optim
 import torch.backends.cudnn as cudnn
 import torchvision.utils as vutils
 
-#import configuration
-conf=yaml.load(open('config.yml'))
+# import configuration
+conf = yaml.load(open('config.yml'))
 path = conf['path_to_data']
 print('load dataset')
 ds = load_Data_Bids2Array(path, mode=conf['mode'])
@@ -25,7 +25,7 @@ full = extract_groundtruth_heatmap(ds)
 train_idx = int(np.round(len(full[0]) * 0.6))
 validation_idx = int(np.round(len(full[0]) * 0.85))
 print(full[0].shape)
-full[0]=full[0][:,:,:,:,0]
+full[0] = full[0][:, :, :, :, 0]
 full_dataset_train = valdataset(image_paths=full[0][0:train_idx], target_paths=full[1][:train_idx])
 full_dataset_val = valdataset(image_paths=full[0][train_idx:validation_idx],
                               target_paths=full[1][train_idx:validation_idx])
@@ -41,7 +41,7 @@ print('generating model')
 model = m.ModelCountception_v2(inplanes=1, outplanes=1)
 model = model.cuda()
 model = model.double()
-if conf['previous_weights']!='':
+if conf['previous_weights'] != '':
     print('loading previous wights')
     model.load_state_dict(torch.load(conf['previous_weights'])['model_weights'])
 criterion = loss_l1
@@ -49,13 +49,11 @@ solver = optim.Adam(model.parameters(), lr=0.00005)
 loss_fcd = FocalDiceLoss()
 print('training')
 for epoch in range(conf['num_epochs']):
-    for idx, (input, target) in enumerate(train_loader):
-        input = input.cuda()
+    for idx, (inputs, target) in enumerate(train_loader):
+        inputs = inputs.cuda()
         target = target.cuda()
-        output = model.forward(input)
+        output = model.forward(inputs)
         heat = output.data.cpu().numpy()
-        # plt.imshow(heat[0,0,:,:])
-        # plt.show()
         loss = criterion(output, target)
         loss_wing = AdapWingLoss(output, target)
         loss_2 = dice_loss(output, target)
@@ -71,23 +69,23 @@ for epoch in range(conf['num_epochs']):
     with torch.no_grad():
         print('val_mode')
         val_loss = []
-        for idx, (input, target) in enumerate(val_loader):
-            input = input.cuda()
+        for idx, (inputs, target) in enumerate(val_loader):
+            inputs = inputs.cuda()
             target = target.cuda()
-            output = model.forward(input)
+            output = model.forward(inputs)
             if (epoch + 1) % 10 == 0:
                 heat = output.data.cpu().numpy()
                 plt.imshow(heat[0, 0, :, :] > 0.5)
                 plt.show()
-                plt.savefig('heatmap '+ str(epoch)+'.png')
+                plt.savefig('heatmap ' + str(epoch) + '.png')
             val_loss.append(criterion(output, target).item())
 
         print("Epoch", epoch, "- Validation Loss:", np.mean(val_loss))
 
-    if (epoch + 1) % 2 == 0:
+    if (epoch + 1) % 50 == 0:
         if conf['saved_model'] != '':
-            name=conf['saved_model']
-        else :
-            name='Countception_train_defaultsave.model'
+            name = conf['saved_model']
+        else:
+            name = 'Countception_train_defaultsave.model'
         state = {'model_weights': model.state_dict()}
         torch.save(state, name)
