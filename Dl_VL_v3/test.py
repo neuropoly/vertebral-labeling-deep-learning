@@ -37,9 +37,9 @@ def prediction_coordinates(Image):
     faux_pos.append(fp)
     faux_neg.append(fn)
     for x in coord_out:
-        # print(coord_out)
+        print('x',x)
 
-        train_lbs_tmp_mask = label2MaskMap_2(x, shape_im)
+        train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
         for w in range(shape_im[1]):
             for h in range(shape_im[2]):
                 final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
@@ -251,7 +251,7 @@ path = '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/str
 ds = load_Data_Bids2Array(path, mode=2)
 print('extract mid slices')
 full = extract_groundtruth_heatmap(ds)
-full[0]=full[0][:,:,:,:,0]
+full[0] = full[0][:,:,:,:,0]
 print('retrieving ground truth coordinates')
 coord_gt = retrieves_gt_coord(ds)
 # intialize metrics
@@ -275,11 +275,11 @@ for i in range(len(coord_gt)):
     #print(coord_gt[i])
     print('processing image {:d} out of {:d}'.format(i+1,len(coord_gt)))
 
-print('distance med l2' + str(np.median(distance_l2)))
+print('distance med l2 and std ' + str(np.median(distance_l2)))
 print(np.std(distance_l2))
-print('distance med z' + str(np.mean(zdis)))
+print('distance med z and std ' + str(np.mean(zdis)))
 print(np.std(zdis))
-print('faux neg per image',faux_neg)
-print('total number of points' + str(np.sum(tot)))
-print('number of faux neg' + str(np.sum(faux_neg)))
-print('number of faux pos' + str(np.sum(faux_pos)))
+print('faux neg per image ',faux_neg)
+print('total number of points ' + str(np.sum(tot)))
+print('number of faux neg ' + str(np.sum(faux_neg)))
+print('number of faux pos ' + str(np.sum(faux_pos)))
