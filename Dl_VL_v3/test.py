@@ -12,23 +12,20 @@ from skimage.feature import peak_local_max
 import model as m
 
 
+# take an Image as input and output the predicted coordinates.
+# Post processing to remove obvious false positive
+# Compute metrics as well and add it to previously existing table
 def prediction_coordinates(Image):
     shape_im = Image.shape
     shape_im = sorted(shape_im)
     final, coordinates = infer_image(Image)
-    # print(coordinates)
     final = np.zeros(shape_im)
     print('before post_proc')
     for x in coordinates:
-
         train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
-        # plt.imshow(train_lbs_tmp_mask)
-        # plt.show()
         for w in range(shape_im[1]):
             for h in range(shape_im[2]):
                 final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
-    # plt.imshow(np.add(final[0, :, :] * 1, 40 * Image[:, :, 0]))
-    # plt.show()
     print('post_processing')
     final = np.zeros(shape_im)
     coord_out = post_processing(coordinates)
@@ -42,23 +39,19 @@ def prediction_coordinates(Image):
     faux_neg.append(fn)
     for x in coord_out:
         print('x', x)
-
         train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
         for w in range(shape_im[1]):
             for h in range(shape_im[2]):
                 final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
-    # plt.imshow(np.add(final[0, :, :, ] * 1, 40 * Image[:, :, 0]))
-    # plt.show()
 
 
 def post_processing(coordinates):
-    c = 0
     coordinates_tmp = []
-    # print(coordinates)
     coordinates = sorted(coordinates, key=lambda x: x[0])
     width_pos = [x[1] for x in coordinates]
     height_pos = [x[0] for x in coordinates]
 
+    # Remove points that are misaligned with the other.
     mean = np.median(width_pos)
     to_remove = []
     for i in range(len(width_pos)):
@@ -82,13 +75,9 @@ def post_processing(coordinates):
         while j < len(height_pos_c) - 2 and abs(height_pos_c[j] - height_pos_c[j + 1]) < 10:
             if len(tmp) > 0:
                 if abs(height_pos_c[tmp[0]] - height_pos_c[j + 1]) > 20:
-                    # print('toomuch')
                     break
-                # else:
-            # print(height_pos_c[tmp[0]] - height_pos_c[j + 1])
             tmp.append(j)
             j = j + 1
-        # print(tmp)
 
         if len(tmp) > 0:
 
@@ -134,20 +123,17 @@ def post_processing(coordinates):
         if abs(height_pos_c[i] - height_pos_c[i - 1]) < dis_mean - 0.1 * dis_mean:
             if abs(height_pos_c[i + 1] - height_pos_c[i]) < dis_mean - 0.7 * dis_mean:
                 to_remove.append(i)
-                # print(coordinates_tmp[i])
-            # print('dif dis')
-            # print(abs(abs((height_pos_c[i + 1] - height_pos_c[i])) - abs((height_pos_c[i] - height_pos_c[i - 1]))))
     for i in range(len(coordinates_tmp)):
         if i in to_remove:
             pass
         else:
             coord_out.append(coordinates_tmp[i])
 
-    return (coord_out)
+    return coord_out
 
 
 def retrieves_gt_coord(ds):
-    coord_gt = []
+    coord_retrieved = []
     for i in range(len(ds[1])):
         coord_tmp = [[], []]
         for j in range(len(ds[1][i])):
@@ -156,8 +142,8 @@ def retrieves_gt_coord(ds):
             else:
                 coord_tmp[0].append(ds[1][i][j][2])
                 coord_tmp[1].append(ds[1][i][j][1])
-        coord_gt.append(coord_tmp)
-    return (coord_gt)
+        coord_retrieved.append(coord_tmp)
+    return (coord_retrieved)
 
 
 def infer_image(image, c=0.02):
@@ -165,41 +151,27 @@ def infer_image(image, c=0.02):
     shape_im = image.shape
     final = np.zeros((shape_im[0], shape_im[1]))
     shape_im = sorted(shape_im)
-    # retrieve coordinates of extreme point
-    # coordinates.sort()
-    # originx=coordinates[-1][0]
-    # originx=6
     originy = 0
-    # image=normalize(image[:,:,0])
-
-    # print(originy)
+    # retriev 2-D for transformation (CLAHE & Normalization )
     patch = image[:, :, 0]
     patch = normalize(patch)
     # patch = skimage.exposure.equalize_adapthist(patch,kernel_size=20,clip_limit=0.02)
-
     patch = np.expand_dims(patch, axis=-1)
-    # patch=Ying_2017_CAIP(patch)
-
     patch = transforms.ToTensor()(patch).unsqueeze(0).cuda()
     patch = patch.double()
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
-    # plt.imshow(patch_out[0, 0, :, :])
-    # plt.show()
+    #retriveal of coordiantes by looking at local max which value are > 0.5
     coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_abs=0.5)
     for w in range(patch.shape[0]):
         for h in range(patch.shape[1]):
             final[w, h] = max(final[w, h], patch_out[0, 0, w, h])
-        # final[0,0,originx-5:originx+80,originy-25:originy+50]=patch_out[0,0,:,:]
-
     for x in coordinates_tmp:
         coord_out.append([x[1], x[0]])
-        # coord_out.append(coordinates_tmp)
-        # print(originy)
-    # print(coord_out)
     return (final, coord_out)
 
-
+#main script
+#TO DO : put it into a function
 print('load image')
 path = '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
 ds = load_Data_Bids2Array(path, mode=2)

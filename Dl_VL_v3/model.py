@@ -1,11 +1,11 @@
-""" Counception Model
-A Pytorch implementation of Count-ception
-Inspired by: https://arxiv.org/abs/1703.08710
-modifed from github https://github.com/roggirg/count-ception_mbm/blob/master/train.py
-"""
 # Author: Lucas
 # Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
 # About the license: see the file license.md
+""" Counception Model
+A Pytorch implementation of Count-ception designed for intervertebrae disc detection
+Inspired by: https://arxiv.org/abs/1703.08710
+modifed from github https://github.com/roggirg/count-ception_mbm/blob/master/train.py
+"""
 
 import torch
 import torch.nn as nn
@@ -135,4 +135,4 @@ class ModelCountception_v2(nn.Module):
         return net
 
     def name(self):
-        return 'countception_V2_VL_DL'
+        return 'countception_VL_DL'

@@ -1,4 +1,6 @@
-## Created by lucas Rouhier On january 4,2020. Please Cite :
+# Author: Lucas
+# Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
+# About the license: see the file license.md
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

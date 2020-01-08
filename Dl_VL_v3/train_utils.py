@@ -7,14 +7,14 @@ from torch.utils.data import Dataset
 from Data2array import *
 import matplotlib.pyplot as plt
 
-
+# normalize Image
 def normalize(arr):
     ma = arr.max()
     mi = arr.min()
-
     return ((arr - mi) / (ma - mi))
 
 
+# Useful function to generate a Gaussian Function on given coordinates. Used to generate groudtruth.
 def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
     """
     Generate a Mask map from the coordenates
@@ -27,10 +27,8 @@ def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
     # Our 2-dimensional distribution will be over variables X and Y
     (M, N) = (shape[2], shape[1])
     if len(data) <= 2:
-        data = [0,data[0],data[1]]
-    #print(data)
-    #print(np.transpose(data.shape))
-
+        # Output coordinates are reduced during post processing which poses a problem
+        data = [0, data[0], data[1]]
     maskMap = []
 
     x, y = data[2], data[1]
@@ -42,6 +40,7 @@ def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
     X = np.linspace(0, M - 1, M)
     Y = np.linspace(0, N - 1, N)
     X, Y = np.meshgrid(X, Y)
+
     # Pack X and Y into a single 3-dimensional array
     pos = np.empty(X.shape + (2,))
     pos[:, :, 0] = X
@@ -70,6 +69,7 @@ def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
     return np.asarray(maskMap)
 
 
+# Create groundtruth by creating gaussian Function for every ground truth points for a sing image
 def extract_all(list_coord_label, shape_im=(1, 150, 200)):
     final = np.zeros(shape_im)
     for x in list_coord_label:
@@ -80,35 +80,26 @@ def extract_all(list_coord_label, shape_im=(1, 150, 200)):
     return (final)
 
 
+# Loop across images to create the dataset of groundtruth and images to input for training
 def extract_groundtruth_heatmap(DataSet):
     [train_ds_img, train_ds_label] = DataSet
 
     global testing_image
     testing_image = train_ds_img[-1]
-
-    # Selecting only the train images that contatins the end label
-    # in these case 15 --> from C2-C3 to T7-T8 disc
-    # remember that with these method big amount of training images will be descarted
-
     tmp_train_labels = [0 for i in range(len(train_ds_label))]
     tmp_train_img = [0 for i in range(len(train_ds_label))]
-
     train_ds_img = np.array(train_ds_img)
 
-    # print(len(train_ds_label))
-    # print(train_lbs_tmp.shape)
     for i in range(len(train_ds_label)):
         final = extract_all(train_ds_label[i])
         tmp_train_labels[i] = normalize(final[0, :, :])
 
-        # Now make the trining datases using only the subset with that contain the "label_number" label
     tmp_train_labels = np.array(tmp_train_labels)
+
     for i in range(len(train_ds_img)):
         tmp_train_img[i] = (normalize(train_ds_img[i][:, :, 0]))
-    # for i in range (len(tmp_train_labels)):
-    # tmp_train_labels[i]=tmp_train_labels[i]>0.3
-    tmp_train_labels = np.expand_dims(tmp_train_labels, axis=-1)
 
+    tmp_train_labels = np.expand_dims(tmp_train_labels, axis=-1)
     tmp_train_img = np.expand_dims(train_ds_img, axis=-1)
     return [tmp_train_img, tmp_train_labels]
 
