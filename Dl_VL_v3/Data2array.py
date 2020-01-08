@@ -101,8 +101,7 @@ def add_zero_padding(img_list, x_val=512, y_val=512):
         img_list = [img_list]
     img_zero_padding_list = []
     for i in range(len(img_list)):
-        print(i)
-        # print('Doing zero-padding ' + str(i + 1) + '/' + str(len(img_list)))
+        print('Doing zero-padding ')
         img = img_list[i]
         img_tmp = np.zeros((x_val, y_val, 1), dtype=np.float64)
         img_tmp[0:img.shape[0], 0:img.shape[1], 0] = img

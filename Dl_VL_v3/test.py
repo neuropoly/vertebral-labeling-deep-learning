@@ -1,6 +1,8 @@
 # Author: Lucas
 # Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
 # About the license: see the file license.md
+# Main script load a The dataset with data2array. lOad the model and perform the inference on the whole thing.
+# After each inference it compute the different metrics described in Metrics.py and add it to list
 
 from Metrics import *
 import torch
@@ -38,7 +40,6 @@ def prediction_coordinates(Image):
     faux_pos.append(fp)
     faux_neg.append(fn)
     for x in coord_out:
-        print('x', x)
         train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
         for w in range(shape_im[1]):
             for h in range(shape_im[2]):
@@ -161,7 +162,7 @@ def infer_image(image, c=0.02):
     patch = patch.double()
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
-    #retriveal of coordiantes by looking at local max which value are > 0.5
+    #retrieveal of coordinates by looking at local max which value are > 0.5
     coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_abs=0.5)
     for w in range(patch.shape[0]):
         for h in range(patch.shape[1]):
