@@ -1,3 +1,7 @@
+# Author: Lucas
+# Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
+# About the license: see the file license.md
+
 from Data2array import *
 from train_utils import *
 import model as m

@@ -1,3 +1,6 @@
+# Author: Lucas
+# Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
+# About the license: see the file license.md
 from torchvision import transforms
 import numpy as np
 from torch.utils.data import Dataset

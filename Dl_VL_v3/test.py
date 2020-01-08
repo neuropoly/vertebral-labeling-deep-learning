@@ -1,3 +1,7 @@
+# Author: Lucas
+# Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
+# About the license: see the file license.md
+
 from Metrics import *
 import torch
 import numpy as np
@@ -17,7 +21,7 @@ def prediction_coordinates(Image):
     print('before post_proc')
     for x in coordinates:
 
-        train_lbs_tmp_mask = label2MaskMap_2(x, shape_im)
+        train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
         # plt.imshow(train_lbs_tmp_mask)
         # plt.show()
         for w in range(shape_im[1]):
