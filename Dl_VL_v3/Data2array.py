@@ -1,6 +1,7 @@
 # Author: Lucas
 # Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
 # About the license: see the file license.md
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -18,8 +19,8 @@ import nibabel as nib
 import math
 import sys
 
-sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
-#import spinalcordtoolbox.image as Image
+# sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
+# import spinalcordtoolbox.image as Image
 matplotlib.use("Agg")
 
 
@@ -101,7 +102,6 @@ def add_zero_padding(img_list, x_val=512, y_val=512):
         img_list = [img_list]
     img_zero_padding_list = []
     for i in range(len(img_list)):
-        print('Doing zero-padding ')
         img = img_list[i]
         img_tmp = np.zeros((x_val, y_val, 1), dtype=np.float64)
         img_tmp[0:img.shape[0], 0:img.shape[1], 0] = img
@@ -189,6 +189,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0):
     ds_image = images_normalization(ds_image)
 
     # Zero padding
+    print('Doing zero-padding ')
     ds_image = add_zero_padding(ds_image, x_val=150, y_val=200)
     # val_ds_img = add_zero_padding(val_ds_img, x_val=size_val, y_val=size_val)
     # test_ds_img = add_zero_padding(test_ds_img, x_val=size_val, y_val=size_val)
