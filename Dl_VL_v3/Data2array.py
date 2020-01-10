@@ -155,7 +155,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0):
     if '.DS_Store' in list_dir:
         list_dir.remove('.DS_Store')
     a = len(list_dir)
-    for i in range(a-100):
+    for i in range(a-50,a):
         path_tmp = DataSet_path + list_dir[i] + '/'
         if mode != 2:
             tmp_label = mask2label(path_tmp + 'T1_label-disc-manual_straight.nii.gz')
