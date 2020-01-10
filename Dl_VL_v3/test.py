@@ -17,10 +17,10 @@ import model as m
 # take an Image as input and output the predicted coordinates.
 # Post processing to remove obvious false positive
 # Compute metrics as well and add it to previously existing table
-def prediction_coordinates(Image):
+def prediction_coordinates(Image, model):
     shape_im = Image.shape
     shape_im = sorted(shape_im)
-    final, coordinates = infer_image(Image)
+    final, coordinates = infer_image(Image, model)
     final = np.zeros(shape_im)
     print('before post_proc')
     for x in coordinates:
@@ -147,7 +147,7 @@ def retrieves_gt_coord(ds):
     return (coord_retrieved)
 
 
-def infer_image(image, c=0.02):
+def infer_image(image, model ,c=0.02):
     coord_out = []
     shape_im = image.shape
     final = np.zeros((shape_im[0], shape_im[1]))
@@ -199,7 +199,7 @@ def main():
         # print(i)
         # path_tmp=path+x
         # mid_check=load_Data_just_check(path_tmp)
-        prediction_coordinates(full[0][i][:, :, :])
+        prediction_coordinates(full[0][i][:, :, :], model)
         # print(coord_gt[i])
         print('processing image {:d} out of {:d}'.format(i + 1, len(coord_gt)))
 
