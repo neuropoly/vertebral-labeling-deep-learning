@@ -190,6 +190,12 @@ def main():
     faux_pos = []
     faux_neg = []
     tot = []
+    global distance_l2
+    global zdis
+    global faux_pos
+    global faux_neg
+    global tot
+
 
     model = m.ModelCountception_v2(inplanes=1, outplanes=1)
     model = model.cuda()
