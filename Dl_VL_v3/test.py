@@ -172,41 +172,45 @@ def infer_image(image, c=0.02):
     return (final, coord_out)
 
 #main script
-#TO DO : put it into a function
-print('load image')
-path = '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
-ds = load_Data_Bids2Array(path, mode=2)
-print('extract mid slices')
-full = extract_groundtruth_heatmap(ds)
-full[0] = full[0][:, :, :, :, 0]
-print('retrieving ground truth coordinates')
-coord_gt = retrieves_gt_coord(ds)
-# intialize metrics
-distance_l2 = []
-zdis = []
-faux_pos = []
-faux_neg = []
-compteur = []
-compteur_tot = []
-tot = []
 
-model = m.ModelCountception_v2(inplanes=1, outplanes=1)
-model = model.cuda()
-model = model.double()
-model.load_state_dict(torch.load("checkpoints/Countception_L1run.model")['model_weights'])
-for i in range(len(coord_gt)):
-    # print(i)
-    # path_tmp=path+x
-    # mid_check=load_Data_just_check(path_tmp)
-    prediction_coordinates(full[0][i][:, :, :])
-    # print(coord_gt[i])
-    print('processing image {:d} out of {:d}'.format(i + 1, len(coord_gt)))
+def main():
+    print('load image')
+    #put image into an array
+    # to do put path in a specific conf file
+    path = '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
+    ds = load_Data_Bids2Array(path, mode=2)
+    print('extract mid slices')
+    full = extract_groundtruth_heatmap(ds)
+    full[0] = full[0][:, :, :, :, 0]
+    print('retrieving ground truth coordinates')
+    coord_gt = retrieves_gt_coord(ds)
+    # intialize metrics
+    distance_l2 = []
+    zdis = []
+    faux_pos = []
+    faux_neg = []
+    tot = []
 
-print('distance med l2 and std ' + str(np.median(distance_l2)))
-print(np.std(distance_l2))
-print('distance med z and std ' + str(np.mean(zdis)))
-print(np.std(zdis))
-print('faux neg per image ', faux_neg)
-print('total number of points ' + str(np.sum(tot)))
-print('number of faux neg ' + str(np.sum(faux_neg)))
-print('number of faux pos ' + str(np.sum(faux_pos)))
+    model = m.ModelCountception_v2(inplanes=1, outplanes=1)
+    model = model.cuda()
+    model = model.double()
+    model.load_state_dict(torch.load("checkpoints/Countception_L1run.model")['model_weights'])
+    for i in range(len(coord_gt)):
+        # print(i)
+        # path_tmp=path+x
+        # mid_check=load_Data_just_check(path_tmp)
+        prediction_coordinates(full[0][i][:, :, :])
+        # print(coord_gt[i])
+        print('processing image {:d} out of {:d}'.format(i + 1, len(coord_gt)))
+
+    print('distance med l2 and std ' + str(np.median(distance_l2)))
+    print(np.std(distance_l2))
+    print('distance med z and std ' + str(np.mean(zdis)))
+    print(np.std(zdis))
+    print('faux neg per image ', faux_neg)
+    print('total number of points ' + str(np.sum(tot)))
+    print('number of faux neg ' + str(np.sum(faux_neg)))
+    print('number of faux pos ' + str(np.sum(faux_pos)))
+
+if __name__ == "__main__":
+    main()
