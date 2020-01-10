@@ -17,7 +17,7 @@ import model as m
 # take an Image as input and output the predicted coordinates.
 # Post processing to remove obvious false positive
 # Compute metrics as well and add it to previously existing table
-def prediction_coordinates(Image, model):
+def prediction_coordinates(Image, model, coord_gt):
     shape_im = Image.shape
     shape_im = sorted(shape_im)
     final, coordinates = infer_image(Image, model)
@@ -199,7 +199,7 @@ def main():
         # print(i)
         # path_tmp=path+x
         # mid_check=load_Data_just_check(path_tmp)
-        prediction_coordinates(full[0][i][:, :, :], model)
+        prediction_coordinates(full[0][i][:, :, :], model, coord_gt)
         # print(coord_gt[i])
         print('processing image {:d} out of {:d}'.format(i + 1, len(coord_gt)))
 
