@@ -145,7 +145,7 @@ def images_normalization(img_list, std=True):
     return img_norm_list
 
 
-def load_Data_Bids2Array(DataSet_path, mode=0):
+def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
     # Mode 1 only load T1 , Mode 2 only load T2 , Different number load both
     size_val = 512
     ds_image = []
@@ -154,8 +154,14 @@ def load_Data_Bids2Array(DataSet_path, mode=0):
     list_dir.sort()
     if '.DS_Store' in list_dir:
         list_dir.remove('.DS_Store')
-    a = len(list_dir)
-    for i in range(a-100):
+    all_file = len(list_dir)
+    if split == 'train':
+        end = int(np.round(all_file*0.85))
+        begin = 0
+    elif split == 'test':
+        begin = int(np.round(all_file * 0.85))
+        end = all_file
+    for i in range(begin, end):
         path_tmp = DataSet_path + list_dir[i] + '/'
         if mode != 2:
             tmp_label = mask2label(path_tmp + 'T1_label-disc-manual_straight.nii.gz')
