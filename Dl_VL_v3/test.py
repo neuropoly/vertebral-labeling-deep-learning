@@ -30,20 +30,24 @@ def prediction_coordinates(Image, model, coord_gt,i):
                 final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
     print('post_processing')
     final = np.zeros(shape_im)
-    coord_out = post_processing(coordinates)
-    print('calculating metrics on image')
-    print(coord_out)
-    mesure_err_disc(coord_gt[i], coord_out, distance_l2)
-    mesure_err_z(coord_gt[i], coord_out, zdis)
-    fp = Faux_pos(coord_gt[i], coord_out, tot)
-    fn = Faux_neg(coord_gt[i], coord_out)
-    faux_pos.append(fp)
-    faux_neg.append(fn)
-    for x in coord_out:
-        train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
-        for w in range(shape_im[1]):
-            for h in range(shape_im[2]):
-                final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
+    print(coordinates)
+    if len(coordinates) > 2:
+        coord_out = post_processing(coordinates)
+        print('calculating metrics on image')
+        print(coord_out)
+        mesure_err_disc(coord_gt[i], coord_out, distance_l2)
+        mesure_err_z(coord_gt[i], coord_out, zdis)
+        fp = Faux_pos(coord_gt[i], coord_out, tot)
+        fn = Faux_neg(coord_gt[i], coord_out)
+        faux_pos.append(fp)
+        faux_neg.append(fn)
+        for x in coord_out:
+            train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
+            for w in range(shape_im[1]):
+                for h in range(shape_im[2]):
+                    final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
+    else :
+        print('Not working on this image')
 
 
 def post_processing(coordinates):
@@ -169,6 +173,8 @@ def infer_image(image, model ,c=0.02):
             final[w, h] = max(final[w, h], patch_out[0, 0, w, h])
     for x in coordinates_tmp:
         coord_out.append([x[1], x[0]])
+    if coord_out == []:
+        coord_out = [0,0]
     return (final, coord_out)
 
 #main script
@@ -185,16 +191,16 @@ def main():
     print('retrieving ground truth coordinates')
     coord_gt = retrieves_gt_coord(ds)
     # intialize metrics
-    distance_l2 = []
-    zdis = []
-    faux_pos = []
-    faux_neg = []
-    tot = []
     global distance_l2
     global zdis
     global faux_pos
     global faux_neg
     global tot
+    distance_l2 = []
+    zdis = []
+    faux_pos = []
+    faux_neg = []
+    tot = []
 
 
     model = m.ModelCountception_v2(inplanes=1, outplanes=1)
