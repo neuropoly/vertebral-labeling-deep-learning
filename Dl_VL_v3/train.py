@@ -23,15 +23,15 @@ def main():
     # Path to data is stored in config file
     path = conf['path_to_data']
     print('load dataset')
-    ds = load_Data_Bids2Array(path, mode=conf['mode'])
+    ds = load_Data_Bids2Array(path, mode=conf['mode'], split='train')
     print('creating heatmap')
     full = extract_groundtruth_heatmap(ds)
 
     # put it in the torch loader
     # The 60 first pourcent are for training the 25 next are for validation in an attempt to keep the 15 last for test
     # TO DO : Implement something to load only this 85 % and not all
-    train_idx = int(np.round(len(full[0]) * 0.6))
-    validation_idx = int(np.round(len(full[0]) * 0.85))
+    train_idx = int(np.round(len(full[0]) * 0.75))
+    validation_idx = int(np.round(len(full[0])))
     print(full[0].shape)
     full[0] = full[0][:, :, :, :, 0]
     # put it inside a Pytorch form. The valDataset only convert Image to Tensor

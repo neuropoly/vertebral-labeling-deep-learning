@@ -184,7 +184,7 @@ def main():
     #put image into an array
     # to do put path in a specific conf file
     path = '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
-    ds = load_Data_Bids2Array(path, mode=2)
+    ds = load_Data_Bids2Array(path, mode=2, split='test')
     print('extract mid slices')
     full = extract_groundtruth_heatmap(ds)
     full[0] = full[0][:, :, :, :, 0]
