@@ -58,7 +58,7 @@ def main():
         model.load_state_dict(torch.load(conf['previous_weights'])['model_weights'])
 
     # criterion can be loss_l1 or caffe_eucl_loss (L2 loss)
-    criterion = loss_l1
+    criterion = caffe_eucl_loss
     solver = optim.Adam(model.parameters(), lr=0.00005)
     loss_fcd = FocalDiceLoss()
 
