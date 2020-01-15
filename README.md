@@ -21,4 +21,19 @@ Figure 2 compares our results on the validation set with the previous SCT method
 ### Conclusion and discussion 
 This study presents a new custom architecture for detecting and labeling intervertebral discs. The method shows improvement in the robustness and precision of localization which will be tested in a real-life setting once it is integrated into the open-source SCT software.
 
+### Cite
+If you use this code please cite 
+~~~
+@INPROCEEDINGS{Rouhier2019-vf,
+  title      = "Spine inter vertebral disc labeling using a fully convolutional
+                redundant counting model",
+  booktitle  = "Proceedings of the 2020 Annual Meeting of {OHBM}, Montreal,
+                Canada",
+  author     = "Rouhier, L and Paul, Cohen J and Perdigon, Romero F and
+                Cohen-Adad, J",
+  year       =  2019,
+  address    = "Montreal, Canada",
+  conference = "Proceedings of the 2020 Annual Meeting of OHBM"
+}
+~~~
 
