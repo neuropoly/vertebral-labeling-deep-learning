@@ -8,13 +8,11 @@ import torch
 import torch.nn as nn
 
 
-def caffe_eucl_loss(x, y):
+def loss_l2(x, y):
     return torch.sum((x - y) ** 2) / 2
 
 
 def AdapWingLoss(pre_hm, gt_hm):
-    # pre_hm = pre_hm.to('cpu')
-    # gt_hm = gt_hm.to('cpu')
     theta = 0.5
     alpha = 2.1
     w = 14
@@ -27,15 +25,13 @@ def AdapWingLoss(pre_hm, gt_hm):
     hm_num = gt_hm.size()[1]
 
     mask = torch.zeros_like(gt_hm)
-    # print(mask.size())
-    # W = 10
+    #W=10
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     for i in range(batch_size):
         img_list = []
 
         img_list.append(np.round(gt_hm[i].cpu().numpy() * 255))
         img_merge = cv2.merge(img_list)
-        # print(img_merge.shape)
         img_dilate = cv2.morphologyEx(img_merge, cv2.MORPH_DILATE, kernel)
         img_dilate[img_dilate < 51] = 1  # 0*W+1
         img_dilate[img_dilate >= 51] = 11  # 1*W+1

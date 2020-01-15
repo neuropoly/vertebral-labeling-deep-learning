@@ -54,59 +54,74 @@ def main():
     model = model.double()
 
     if conf['previous_weights'] != '':
-        print('loading previous wights')
+        print('loading previous weights')
         model.load_state_dict(torch.load(conf['previous_weights'])['model_weights'])
 
-    # criterion can be loss_l1 or caffe_eucl_loss (L2 loss)
-    criterion = caffe_eucl_loss
+    # criterion can be loss_l1 or loss_l2
+    criterion = loss_l2
     solver = optim.Adam(model.parameters(), lr=0.00005)
     loss_fcd = FocalDiceLoss()
-
+    best_val_loss = 10000
+    patience=0
     print('training')
     # For now all is designed for CUDA.
-    for epoch in range(conf['num_epochs']):
-        for idx, (inputs, target) in enumerate(train_loader):
-            inputs = inputs.cuda()
-            target = target.cuda()
-            output = model.forward(inputs)
-            heat = output.data.cpu().numpy()
-            loss = criterion(output, target)
-            loss_wing = AdapWingLoss(output, target)
-            loss_2 = dice_loss(output, target)
-
-            # Zero grad
-            model.zero_grad()
-            loss.backward(retain_graph=True)
-            loss_wing.backward(retain_graph=True)
-            loss_2.backward()
-            solver.step()
-
-        # print(loss_l2_disk(output, target))
-        with torch.no_grad():
-            print('val_mode')
-            val_loss = []
-            for idx, (inputs, target) in enumerate(val_loader):
+    try:
+        for epoch in range(conf['num_epochs']):
+            for idx, (inputs, target) in enumerate(train_loader):
                 inputs = inputs.cuda()
                 target = target.cuda()
                 output = model.forward(inputs)
-                #every 10 epochs we save an image that show the ouput heatmap to check improvement
-                if (epoch + 1) % 10 == 0:
-                    heat = output.data.cpu().numpy()
-                    plt.imshow(heat[0, 0, :, :] > 0.5)
-                    plt.show()
-                    plt.savefig('heatmap ' + str(epoch) + '.png')
-                val_loss.append(criterion(output, target).item())
+                heat = output.data.cpu().numpy()
+                loss = criterion(output, target)
+                loss_wing = AdapWingLoss(output, target)
+                loss_2 = dice_loss(output, target)
 
-            print("Epoch", epoch, "- Validation Loss:", np.mean(val_loss))
+            # Zero grad
+                model.zero_grad()
+                loss.backward(retain_graph=True)
+                loss_wing.backward(retain_graph=True)
+                loss_2.backward()
+                solver.step()
 
-        # model is saved every 50 epochs.
-        if (epoch + 1) % 50 == 0:
-            if conf['saved_model'] != '':
-                name = conf['saved_model']
+            with torch.no_grad():
+                print('val_mode')
+                val_loss = []
+                for idx, (inputs, target) in enumerate(val_loader):
+                    inputs = inputs.cuda()
+                    target = target.cuda()
+                    output = model.forward(inputs)
+                    #every 10 epochs we save an image that show the ouput heatmap to check improvement
+                    if conf['save_heatmap'] !=0 :
+                        if (epoch + 1) % conf['save_heatmap'] == 0:
+                            heat = output.data.cpu().numpy()
+                            plt.imshow(heat[0, 0, :, :] > 0.5)
+                            plt.show()
+                            plt.savefig('heatmap ' + str(epoch) + '.png')
+                    val_loss.append(criterion(output, target).item())
+
+                print("Epoch", epoch, "- Validation Loss:", np.mean(val_loss))
+
+        # best model is saved.
+            if abs(np.mean(val_loss)) < best_val_loss and abs(abs(np.mean(val_loss)-best_val_loss)>0.5:
+                print('New best loss, saving...')
+                best_val_loss=copy.deepcopy(np.mean(val_loss))
+                patience=0
+                if conf['saved_model'] != '':
+                    name = conf['saved_model']
+                else:
+                    name = 'Countception_train_defaultsave.model'
+                state = copy.deepcopy({'model_weights': model.state_dict()})
+                torch.save(state, name)
             else:
-                name = 'Countception_train_defaultsave.model'
-            state = {'model_weights': model.state_dict()}
-            torch.save(state, name)
+                patience += 1
+            if patience > 10:
+                break
+
+    except KeyboardInterrupt:
+        print('saving model')
+        name = 'checkpoints/Countception_KeyboardInterrupt_save.model'
+        state = {'model_weights': model.state_dict()}
+        torch.save(state, name)
 
 if __name__ == "__main__":
     main()

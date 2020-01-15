@@ -12,6 +12,7 @@ from Data2array import *
 import matplotlib.pyplot as plt
 from skimage.feature import peak_local_max
 import model as m
+import yaml
 
 
 # take an Image as input and output the predicted coordinates.
@@ -157,7 +158,7 @@ def infer_image(image, model ,c=0.02):
     final = np.zeros((shape_im[0], shape_im[1]))
     shape_im = sorted(shape_im)
     originy = 0
-    # retriev 2-D for transformation (CLAHE & Normalization )
+    # retrieve 2-D for transformation (CLAHE & Normalization )
     patch = image[:, :, 0]
     patch = normalize(patch)
     # patch = skimage.exposure.equalize_adapthist(patch,kernel_size=20,clip_limit=0.02)
@@ -180,11 +181,13 @@ def infer_image(image, model ,c=0.02):
 #main script
 
 def main():
+    # load configuration
+    conf = yaml.load(open('config_test.yml'))
     print('load image')
     #put image into an array
     # to do put path in a specific conf file
-    path = '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
-    ds = load_Data_Bids2Array(path, mode=1, split='test')
+    path = conf['path_to_data']
+    ds = load_Data_Bids2Array(path, mode=conf['mode'], split='test')
     print('extract mid slices')
     full = extract_groundtruth_heatmap(ds)
     full[0] = full[0][:, :, :, :, 0]
@@ -206,7 +209,7 @@ def main():
     model = m.ModelCountception_v2(inplanes=1, outplanes=1)
     model = model.cuda()
     model = model.double()
-    model.load_state_dict(torch.load("checkpoints/Countception_L1run.model")['model_weights'])
+    model.load_state_dict(torch.load(conf['weights'])['model_weights'])
     for i in range(len(coord_gt)):
         # print(i)
         # path_tmp=path+x
