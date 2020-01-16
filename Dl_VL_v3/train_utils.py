@@ -34,8 +34,8 @@ def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
     x, y = data[2], data[1]
 
     # Correct the labels
-    x = x + c_dx
-    y = y + c_dy
+    x += c_dx
+    y += c_dy
 
     X = np.linspace(0, M - 1, M)
     Y = np.linspace(0, N - 1, N)
@@ -55,10 +55,10 @@ def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
 
     # Normalization
     if normalize:
-        Z = Z * (1 / np.max(Z))
+        Z *= (1 / np.max(Z))
     else:
         # 8bit image values (the loss go to inf+)
-        Z = Z * (1 / np.max(Z))
+        Z *= (1 / np.max(Z))
         Z = np.asarray(Z * 255, dtype=np.uint8)
 
     maskMap.append(Z)
@@ -104,7 +104,7 @@ def extract_groundtruth_heatmap(DataSet):
     return [tmp_train_img, tmp_train_labels]
 
 
-class valdataset(Dataset):
+class image_Dataset(Dataset):
     def __init__(self, image_paths, target_paths):  # initial logic happens like transform
 
         self.image_paths = image_paths

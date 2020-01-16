@@ -1,9 +1,7 @@
-# Author: Lucas
-# Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
 # About the license: see the file license.md
 """ Counception Model
-A Pytorch implementation of Count-ception designed for intervertebrae disc detection
-Inspired by: https://arxiv.org/abs/1703.08710
+A Pytorch implementation of Count-ception architecture designed for intervertebral disc detection
+based on : https://arxiv.org/abs/1703.08710
 modifed from github https://github.com/roggirg/count-ception_mbm/blob/master/train.py
 """
 

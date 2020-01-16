@@ -83,7 +83,7 @@ def post_processing(coordinates):
                 if abs(height_pos_c[tmp[0]] - height_pos_c[j + 1]) > 20:
                     break
             tmp.append(j)
-            j = j + 1
+            j += 1
 
         if len(tmp) > 0:
 
@@ -92,7 +92,7 @@ def post_processing(coordinates):
 
             new_height.append(h)
             new_width.append(w)
-            i = i + len(tmp) + 1
+            i += len(tmp) + 1
 
         else:
             h = height_pos_c[i]
@@ -100,7 +100,7 @@ def post_processing(coordinates):
 
             new_height.append(h)
             new_width.append(w)
-            i = i + 1
+            i += 1
     coordinates_tmp = []
     for a in range(len(new_height)):
         coordinates_tmp.append([new_height[a], new_width[a]])
@@ -114,18 +114,14 @@ def post_processing(coordinates):
     for i in range(len(height_pos_c) - 1):
         distance.append(height_pos_c[i + 1] - height_pos_c[i])
     dis_mean_g = np.mean(distance)
-    # print(dis_mean)
     for i in range(1, len(height_pos_c) - 1):
         dis_mean = dis_mean_g
-
-        # print(height_pos_c[i + 1] - height_pos_c[i])
         if i < len(height_pos_c) - 4:
             distance_2 = []
             for j in range(4):
                 distance_2.append(height_pos_c[i + j] - height_pos_c[i + j - 1])
                 dis_mean = np.median(distance_2)
-            print(dis_mean)
-        # if abs(abs((height_pos_c[i+1]-height_pos_c[i]))-abs((height_pos_c[i]-height_pos_c[i-1])))>10 and abs(abs((height_pos_c[i+1]-height_pos_c[i]))-abs((height_pos_c[i]-height_pos_c[i-1])))<35:
+            # Debugging print: print(dis_mean)
         if abs(height_pos_c[i] - height_pos_c[i - 1]) < dis_mean - 0.1 * dis_mean:
             if abs(height_pos_c[i + 1] - height_pos_c[i]) < dis_mean - 0.7 * dis_mean:
                 to_remove.append(i)
@@ -152,6 +148,7 @@ def retrieves_gt_coord(ds):
     return (coord_retrieved)
 
 
+# 'c' is a parameter used for clahe clip limit value.
 def infer_image(image, model ,c=0.02):
     coord_out = []
     shape_im = image.shape
@@ -175,7 +172,7 @@ def infer_image(image, model ,c=0.02):
     for x in coordinates_tmp:
         coord_out.append([x[1], x[0]])
     if coord_out == []:
-        coord_out = [0,0]
+        coord_out = [0, 0]
     return (final, coord_out)
 
 #main script
@@ -184,7 +181,7 @@ def main():
     # load configuration
     conf = yaml.load(open('config_test.yml'))
     print('load image')
-    #put image into an array
+    # put image into an array
     # to do put path in a specific conf file
     path = conf['path_to_data']
     ds = load_Data_Bids2Array(path, mode=conf['mode'], split='test')

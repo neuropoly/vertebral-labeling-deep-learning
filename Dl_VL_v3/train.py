@@ -18,6 +18,7 @@ import torchvision.utils as vutils
 
 
 def main():
+    cuda_available = torch.cuda.is_available()
     # import configuration
     conf = yaml.load(open('config.yml'))
     # Path to data is stored in config file
@@ -34,13 +35,13 @@ def main():
     validation_idx = int(np.round(len(full[0])))
     print(full[0].shape)
     full[0] = full[0][:, :, :, :, 0]
-    # put it inside a Pytorch form. The valDataset only convert Image to Tensor
-    full_dataset_train = valdataset(image_paths=full[0][0:train_idx], target_paths=full[1][:train_idx])
-    full_dataset_val = valdataset(image_paths=full[0][train_idx:validation_idx],
+    # put it inside a Pytorch form. The image_Dataset only convert Image to Tensor
+    full_dataset_train = image_Dataset(image_paths=full[0][0:train_idx], target_paths=full[1][:train_idx])
+    full_dataset_val = image_Dataset(image_paths=full[0][train_idx:validation_idx],
                                   target_paths=full[1][train_idx:validation_idx])
 
-    # show the number of image to be processed during traing
-    print('lendata' + str(len(full_dataset_train)))
+    # show the number of image to be processed during training
+    print('Training on' + str(len(full_dataset_train)) + 'pictures')
     train_loader = DataLoader(full_dataset_train, batch_size=2,
                               shuffle=False,
                               num_workers=0)
@@ -50,7 +51,8 @@ def main():
     print('generating model')
 
     model = m.ModelCountception_v2(inplanes=1, outplanes=1)
-    model = model.cuda()
+    if cuda_available:
+        model = model.cuda()
     model = model.double()
 
     if conf['previous_weights'] != '':
@@ -60,37 +62,38 @@ def main():
     # criterion can be loss_l1 or loss_l2
     criterion = loss_l2
     solver = optim.Adam(model.parameters(), lr=0.00005)
-    loss_fcd = FocalDiceLoss()
+    # if you need  focal dice : loss_fcd = FocalDiceLoss()
     best_val_loss = 10000
-    patience=0
+    patience = 0
     print('training')
     # For now all is designed for CUDA.
     try:
         for epoch in range(conf['num_epochs']):
             for idx, (inputs, target) in enumerate(train_loader):
-                inputs = inputs.cuda()
-                target = target.cuda()
+                if cuda_available:
+                    inputs = inputs.cuda()
+                    target = target.cuda()
                 output = model.forward(inputs)
-                heat = output.data.cpu().numpy()
                 loss = criterion(output, target)
                 loss_wing = AdapWingLoss(output, target)
-                loss_2 = dice_loss(output, target)
+                loss_dice = dice_loss(output, target)
 
             # Zero grad
                 model.zero_grad()
                 loss.backward(retain_graph=True)
                 loss_wing.backward(retain_graph=True)
-                loss_2.backward()
+                loss_dice.backward()
                 solver.step()
 
             with torch.no_grad():
                 print('val_mode')
                 val_loss = []
                 for idx, (inputs, target) in enumerate(val_loader):
-                    inputs = inputs.cuda()
-                    target = target.cuda()
+                    if cuda_available:
+                        inputs = inputs.cuda()
+                        target = target.cuda()
                     output = model.forward(inputs)
-                    #every 10 epochs we save an image that show the ouput heatmap to check improvement
+                    #every X epochs we save an image that show the ouput heatmap to check improvement
                     if conf['save_heatmap'] !=0 :
                         if (epoch + 1) % conf['save_heatmap'] == 0:
                             heat = output.data.cpu().numpy()
@@ -102,10 +105,10 @@ def main():
                 print("Epoch", epoch, "- Validation Loss:", np.mean(val_loss))
 
         # best model is saved.
-            if abs(np.mean(val_loss)) < best_val_loss and abs(abs(np.mean(val_loss)-best_val_loss)>0.5:
+            if abs(np.mean(val_loss)) < best_val_loss and abs(abs(np.mean(val_loss)-best_val_loss)) > 0.5:
                 print('New best loss, saving...')
-                best_val_loss=copy.deepcopy(np.mean(val_loss))
-                patience=0
+                best_val_loss = copy.deepcopy(np.mean(val_loss))
+                patience = 0
                 if conf['saved_model'] != '':
                     name = conf['saved_model']
                 else:
