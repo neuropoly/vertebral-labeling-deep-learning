@@ -4,7 +4,7 @@
 
 from Data2array import *
 from train_utils import *
-import model as m
+from models import *
 from losses import *
 import numpy as np
 import copy
@@ -50,7 +50,7 @@ def main():
                             num_workers=0)
     print('generating model')
 
-    model = m.ModelCountception_v2(inplanes=1, outplanes=1)
+    model = ModelCountception_v2(inplanes=1, outplanes=1)
     if cuda_available:
         model = model.cuda()
     model = model.double()

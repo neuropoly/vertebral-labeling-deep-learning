@@ -11,7 +11,7 @@ from train_utils import *
 from Data2array import *
 import matplotlib.pyplot as plt
 from skimage.feature import peak_local_max
-import model as m
+from models import *
 import yaml
 
 
@@ -160,7 +160,9 @@ def infer_image(image, model ,c=0.02):
     patch = normalize(patch)
     # patch = skimage.exposure.equalize_adapthist(patch,kernel_size=20,clip_limit=0.02)
     patch = np.expand_dims(patch, axis=-1)
-    patch = transforms.ToTensor()(patch).unsqueeze(0).cuda()
+    patch = transforms.ToTensor()(patch).unsqueeze(0)
+    if cuda_available:
+        patch = patch.cuda()
     patch = patch.double()
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
@@ -178,6 +180,8 @@ def infer_image(image, model ,c=0.02):
 #main script
 
 def main():
+    global cuda_available
+    cuda_available = torch.cuda.is_available()
     # load configuration
     conf = yaml.load(open('config_test.yml'))
     print('load image')
@@ -203,16 +207,14 @@ def main():
     tot = []
 
 
-    model = m.ModelCountception_v2(inplanes=1, outplanes=1)
-    model = model.cuda()
+    model = ModelCountception_v2(inplanes=1, outplanes=1)
+    if cuda_available:
+        model = model.cuda()
     model = model.double()
     model.load_state_dict(torch.load(conf['weights'])['model_weights'])
     for i in range(len(coord_gt)):
-        # print(i)
-        # path_tmp=path+x
-        # mid_check=load_Data_just_check(path_tmp)
         prediction_coordinates(full[0][i][:, :, :], model, coord_gt, i)
-        # print(coord_gt[i])
+        # Debuuging print (check gt coordinates) print(coord_gt[i])
         print('processing image {:d} out of {:d}'.format(i + 1, len(coord_gt)))
 
     print('distance med l2 and std ' + str(np.median(distance_l2)))
