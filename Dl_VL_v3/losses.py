@@ -1,6 +1,9 @@
-# Author: Lucas
-# Copyright (c) 2020 Polytechnique Montreal <www.neuro.polymtl.ca>
+
 # About the license: see the file license.md
+"""
+visit https://github.com/neuropoly/ivado-medical-imaging
+For dice, Focaldice, GeneralizedDice and focal_loass implementation
+"""
 
 import cv2
 import numpy as np
@@ -13,6 +16,10 @@ def loss_l2(x, y):
 
 
 def AdapWingLoss(pre_hm, gt_hm):
+    """
+    adaptive Wing loss : https://arxiv.org/abs/1904.07399
+
+    """
     theta = 0.5
     alpha = 2.1
     w = 14

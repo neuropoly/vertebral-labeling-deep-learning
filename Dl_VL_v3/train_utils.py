@@ -18,9 +18,10 @@ def normalize(arr):
 def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
     """
     Generate a Mask map from the coordenates
-    :param M, N: dimension of output
-    :param position: position of the label
+    :param shape: dimension of output
+    :param data : input image
     :param radius: is the radius of the gaussian function
+    :param normalize : bool for normalization.
     :return: a MxN normalized array
     """
 
@@ -69,8 +70,13 @@ def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
     return np.asarray(maskMap)
 
 
-# Create groundtruth by creating gaussian Function for every ground truth points for a sing image
 def extract_all(list_coord_label, shape_im=(1, 150, 200)):
+    """
+    Create groundtruth by creating gaussian Function for every ground truth points for a single image
+    :param list_coord_label: list of ground truth coordinates
+    :param shape_im: shape of output image with zero padding
+    :return: a 2d heatmap image.
+    """
     final = np.zeros(shape_im)
     for x in list_coord_label:
         train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
@@ -80,8 +86,12 @@ def extract_all(list_coord_label, shape_im=(1, 150, 200)):
     return (final)
 
 
-# Loop across images to create the dataset of groundtruth and images to input for training
 def extract_groundtruth_heatmap(DataSet):
+    """
+    Loop across images to create the dataset of groundtruth and images to input for training
+    :param DataSet: An array containing [images, GT corrdinates]
+    :return: an array containing [image, heatmap]
+    """
     [train_ds_img, train_ds_label] = DataSet
 
     global testing_image

@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from torch import autograd, optim
 import torch.backends.cudnn as cudnn
 import torchvision.utils as vutils
+from os import path
 
 
 def main():
@@ -56,8 +57,11 @@ def main():
     model = model.double()
 
     if conf['previous_weights'] != '':
-        print('loading previous weights')
-        model.load_state_dict(torch.load(conf['previous_weights'])['model_weights'])
+        if path.exist(conf['previous_weights']):
+            print('loading previous weights')
+            model.load_state_dict(torch.load(conf['previous_weights'])['model_weights'])
+        else:
+            print('wrong weights path. Starting with random initialization')
 
     # criterion can be loss_l1 or loss_l2
     criterion = loss_l2
@@ -117,7 +121,7 @@ def main():
                 torch.save(state, name)
             else:
                 patience += 1
-            if patience > 10:
+            if patience > conf['patience']:
                 break
 
     except KeyboardInterrupt:
