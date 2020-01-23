@@ -1,0 +1,3 @@
+weights: 'checkpoints/Countception_L1T2.model' #Path to weights to use for the test
+mode: 2 # if 1 test will only use T1 , if 2 test will only use T2, if 0 test will use T1 and T2 
+path_to_data: '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/' # path to image data in Bids format
