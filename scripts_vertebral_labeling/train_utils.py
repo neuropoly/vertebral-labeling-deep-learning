@@ -6,6 +6,7 @@ import numpy as np
 from torch.utils.data import Dataset
 from Data2array import *
 import matplotlib.pyplot as plt
+import PIL
 
 # normalize Image
 def normalize(arr):
@@ -119,15 +120,18 @@ class image_Dataset(Dataset):
 
         self.image_paths = image_paths
         self.target_paths = target_paths
-        self.transforms = transforms.ToTensor()
+        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.RandomRotation(20,  PIL.Image.BILINEAR),transforms.RandomCrop(120),transforms.RandomVerticalFlip(0.6),transforms.ToTensor()])
+        
 
     def __getitem__(self, index):
         mask = self.target_paths[index]
+        mask = mask.astype(np.float32) 
 
         image = self.image_paths[index]
+        image = image.astype(np.float32)
 
-        t_image = self.transforms(image)
-        t_mask = self.transforms(mask)
+        t_image = self.transform(image)
+        t_mask = self.transform(mask)
 
         return t_image, t_mask
 

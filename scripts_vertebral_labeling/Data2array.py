@@ -130,7 +130,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
         list_dir.remove('.DS_Store')
     all_file = len(list_dir)
     if split == 'train':
-        end = int(np.round(all_file*0.40))
+        end = int(np.round(all_file*0.4))
         begin = 0
     elif split == 'test':
         begin = int(np.round(all_file * 0.85))

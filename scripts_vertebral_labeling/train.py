@@ -64,8 +64,10 @@ def main():
          #   print('wrong weights path. Starting with random initialization')
 
     # criterion can be loss_l1 or loss_l2
-    criterion = loss_l1
+    criterion = loss_l2
+
     solver = optim.Adam(model.parameters(), lr=0.00005)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(solver, 32, eta_min=0.00000005, last_epoch=-1)
     # if you need  focal dice : loss_fcd = FocalDiceLoss()
     best_val_loss = 10000
     patience = 0
@@ -75,8 +77,8 @@ def main():
         for epoch in range(conf['num_epochs']):
             for idx, (inputs, target) in enumerate(train_loader):
                 if cuda_available:
-                    inputs = inputs.cuda()
-                    target = target.cuda()
+                    inputs = inputs.double().cuda()
+                    target = target.double().cuda()
                 output = model.forward(inputs)
                 loss = criterion(output, target)
                 loss_wing = AdapWingLoss(output, target)
@@ -88,19 +90,25 @@ def main():
                 loss_wing.backward(retain_graph=True)
                 loss_dice.backward()
                 solver.step()
+                print(scheduler.get_lr())
+                scheduler.step()
 
             with torch.no_grad():
                 print('val_mode')
                 val_loss = []
                 for idx, (inputs, target) in enumerate(val_loader):
                     if cuda_available:
-                        inputs = inputs.cuda()
-                        target = target.cuda()
+                        inputs = inputs.double().cuda()
+                        target = target.double().cuda()
                     output = model.forward(inputs)
                     #every X epochs we save an image that show the ouput heatmap to check improvement
                     if conf['save_heatmap'] !=0 :
                         if (epoch + 1) % conf['save_heatmap'] == 0:
+                            inp = inputs.data.cpu().numpy()
                             heat = output.data.cpu().numpy()
+                            plt.imshow(inp[0, 0, :, :])
+                            plt.show()
+                            plt.savefig('input' + str(epoch)+ '.png')
                             plt.imshow(heat[0, 0, :, :] > 0.5)
                             plt.show()
                             plt.savefig('heatmap ' + str(epoch) + '.png')

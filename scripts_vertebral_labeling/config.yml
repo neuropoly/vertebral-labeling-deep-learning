@@ -1,7 +1,7 @@
 num_epochs: 100
 mode: 2 #0 for both t1 and t2 , 1 for t1 only , 2 for t2 only
 path_to_data: '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
-save_heatmap: 0 #if value X!=0, it will save the thresholded output of the network every X epochs
-saved_model: 'checkpoints/Countception_L1T2.model' # leave '' will use a default value 
-previous_weights: 'checkpoints/Countception_L1T2.model' # leave '' if you don't want to load , or don't have previous weights
+save_heatmap: 5 #if value X!=0, it will save the thresholded output of the network every X epochs
+saved_model: 'checkpoints/Countception_L2T2_Daug.model' # leave '' will use a default value 
+previous_weights: 'checkpoints/Countception_L2T2_Daug.model' # leave empty if you don't want to use previous weights
 patience: 15 # number of epochs without improvement to do before finishing training early.  

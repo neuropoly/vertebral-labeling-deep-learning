@@ -19,35 +19,44 @@ import yaml
 # take an Image as input and output the predicted coordinates.
 # Post processing to remove obvious false positive
 # Compute metrics as well and add it to previously existing table
-def prediction_coordinates(Image, model, coord_gt,i):
+def prediction_coordinates(Image, model, coord_gt, i, test=True):
+    global cuda_available
+    cuda_available = torch.cuda.is_available()
     shape_im = Image.shape
     shape_im = sorted(shape_im)
     final, coordinates = infer_image(Image, model)
     final = np.zeros(shape_im)
     print('before post_proc')
-    for x in coordinates:
-        train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
-        for w in range(shape_im[1]):
-            for h in range(shape_im[2]):
-                final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
+    if test:
+        for x in coordinates:
+            train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
+            for w in range(shape_im[1]):
+                for h in range(shape_im[2]):
+                    final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
     print('post_processing')
     final = np.zeros(shape_im)
     print(coordinates)
     if len(coordinates) > 2:
         coord_out = post_processing(coordinates)
-        print('calculating metrics on image')
-        print(coord_out)
-        mesure_err_disc(coord_gt[i], coord_out, distance_l2)
-        mesure_err_z(coord_gt[i], coord_out, zdis)
-        fp = Faux_pos(coord_gt[i], coord_out, tot)
-        fn = Faux_neg(coord_gt[i], coord_out)
-        faux_pos.append(fp)
-        faux_neg.append(fn)
-        for x in coord_out:
-            train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
-            for w in range(shape_im[1]):
-                for h in range(shape_im[2]):
-                    final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
+
+        if len(coord_out) <2:
+            coord_out=coordinates
+        if test:
+            print('calculating metrics on image')
+            #print(coord_out)
+            mesure_err_disc(coord_gt[i], coord_out, distance_l2)
+            mesure_err_z(coord_gt[i], coord_out, zdis)
+            fp = Faux_pos(coord_gt[i], coord_out, tot)
+            fn = Faux_neg(coord_gt[i], coord_out)
+            faux_pos.append(fp)
+            faux_neg.append(fn)
+            for x in coord_out:
+                train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
+                for w in range(shape_im[1]):
+                    for h in range(shape_im[2]):
+                        final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
+        else:
+            return coordinates
     else :
         print('Not working on this image')
 
@@ -159,7 +168,7 @@ def infer_image(image, model ,c=0.02):
     # retrieve 2-D for transformation (CLAHE & Normalization )
     patch = image[:, :, 0]
     patch = normalize(patch)
-    #patch = skimage.exposure.equalize_adapthist(patch,kernel_size=20,clip_limit=0.02)
+    patch = skimage.exposure.equalize_adapthist(patch,kernel_size=10,clip_limit=0.02)
     patch = np.expand_dims(patch, axis=-1)
     patch = transforms.ToTensor()(patch).unsqueeze(0)
     if cuda_available:
@@ -168,7 +177,7 @@ def infer_image(image, model ,c=0.02):
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
     #retrieveal of coordinates by looking at local max which value are > 0.5
-    coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_abs=0.5)
+    coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_rel=0.3)
     for w in range(patch.shape[0]):
         for h in range(patch.shape[1]):
             final[w, h] = max(final[w, h], patch_out[0, 0, w, h])
