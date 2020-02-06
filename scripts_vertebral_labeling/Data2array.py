@@ -18,6 +18,10 @@ import pickle
 import nibabel as nib
 import math
 import sys
+sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
+from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
+from spinalcordtoolbox.image import Image
+
 
 # sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
 # import spinalcordtoolbox.image as Image
@@ -71,16 +75,19 @@ def mask2label(path_label):
     :param path_label: path of nifti image
     :return:
     """
-    a = nib.load(path_label)
-    arr = np.array(a.dataobj)
-
+    a = Image(path_label)
+    a.change_orientation('RPI')
+    arr = np.array(a.data)
+    print(path_label)
     list_label_image = []
     for i in range(len(arr.nonzero()[0])):
         x = arr.nonzero()[0][i]
         y = arr.nonzero()[1][i]
         z = arr.nonzero()[2][i]
-        list_label_image.append([x, y, z, arr[x, y, z]])
+        if arr[x, y, z] < 30:
+            list_label_image.append([x, y, z, arr[x, y, z]])
     list_label_image.sort(key=lambda x: x[3])
+    print(list_label_image)
     return (list_label_image)
 
 
@@ -92,8 +99,9 @@ def get_midNifti(path_im, ind):
     :param ind: index of the middle
     :return:
     """
-    a = nib.load(path_im)
-    arr = np.array(a.dataobj)
+    a = Image(path_im)
+    a.change_orientation('RPI')
+    arr = np.array(a.data)
     return np.mean(arr[ind - 3:ind + 3, :, :], 0)
 
 
@@ -133,8 +141,8 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
         end = int(np.round(all_file*0.4))
         begin = 0
     elif split == 'test':
-        begin = int(np.round(all_file * 0.85))
-        end = all_file
+        begin = int(np.round(all_file * 0.5))
+        end = int(np.round(all_file*0.7))
     for i in range(begin, end):
         path_tmp = DataSet_path + list_dir[i] + '/'
         if mode != 2:
@@ -155,7 +163,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
         if mid_slice.shape[0] > 200:
             print('removed')
             pass
-        elif mid_slice.shape[1] > 200:
+        elif mid_slice.shape[1] >200:
             print('removed')
             pass
         else:
@@ -169,8 +177,12 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
     ds_image = images_normalization(ds_image)
 
     # Zero padding
-    print('Doing zero-padding ')
-    ds_image = add_zero_padding(ds_image, x_val=150, y_val=200)
+    if split == 'train':
+        print('Doing zero-padding ')
+        ds_image = add_zero_padding(ds_image, x_val=150, y_val=200)
+    if split == 'test': 
+        for i in range (len(ds_image)):
+            ds_image[i] = np.expand_dims(ds_image[i],-1)
     # val_ds_img = add_zero_padding(val_ds_img, x_val=size_val, y_val=size_val)
     # test_ds_img = add_zero_padding(test_ds_img, x_val=size_val, y_val=size_val)
 

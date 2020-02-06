@@ -7,6 +7,7 @@ from torch.utils.data import Dataset
 from Data2array import *
 import matplotlib.pyplot as plt
 import PIL
+from transform_spe import * 
 
 # normalize Image
 def normalize(arr):
@@ -108,6 +109,7 @@ def extract_groundtruth_heatmap(DataSet):
     tmp_train_labels = np.array(tmp_train_labels)
 
     for i in range(len(train_ds_img)):
+        print(train_ds_img[i].shape)
         tmp_train_img[i] = (normalize(train_ds_img[i][:, :, 0]))
 
     tmp_train_labels = np.expand_dims(tmp_train_labels, axis=-1)
@@ -120,7 +122,24 @@ class image_Dataset(Dataset):
 
         self.image_paths = image_paths
         self.target_paths = target_paths
-        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.RandomRotation(20,  PIL.Image.BILINEAR),transforms.RandomCrop(120),transforms.RandomVerticalFlip(0.6),transforms.ToTensor()])
+    
+    def transform(self, image, mask):
+
+
+
+        # Random horizontal flipping
+        image,mask = RandomHorizontalFlip()(image,mask)
+
+        # Random vertical flipping
+        image,mask = RandomVerticalFlip()(image,mask)
+        #random90 flipping
+
+        image,mask = RandomangleFlip()(image,mask)
+
+        # Transform to tensor
+        image,mask = ToTensor()(image,mask)
+
+        return image, mask
         
 
     def __getitem__(self, index):
@@ -130,8 +149,8 @@ class image_Dataset(Dataset):
         image = self.image_paths[index]
         image = image.astype(np.float32)
 
-        t_image = self.transform(image)
-        t_mask = self.transform(mask)
+        t_image, t_mask  = self.transform(image, mask)
+        
 
         return t_image, t_mask
 

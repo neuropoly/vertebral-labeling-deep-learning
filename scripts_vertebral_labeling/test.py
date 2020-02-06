@@ -168,7 +168,7 @@ def infer_image(image, model ,c=0.02):
     # retrieve 2-D for transformation (CLAHE & Normalization )
     patch = image[:, :, 0]
     patch = normalize(patch)
-    patch = skimage.exposure.equalize_adapthist(patch,kernel_size=10,clip_limit=0.02)
+    patch = skimage.exposure.equalize_adapthist(patch,kernel_size=5,clip_limit=0.1)
     patch = np.expand_dims(patch, axis=-1)
     patch = transforms.ToTensor()(patch).unsqueeze(0)
     if cuda_available:
@@ -177,7 +177,7 @@ def infer_image(image, model ,c=0.02):
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
     #retrieveal of coordinates by looking at local max which value are > 0.5
-    coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_rel=0.3)
+    coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_abs=0.3)
     for w in range(patch.shape[0]):
         for h in range(patch.shape[1]):
             final[w, h] = max(final[w, h], patch_out[0, 0, w, h])
@@ -201,7 +201,7 @@ def main():
     ds = load_Data_Bids2Array(path, mode=conf['mode'], split='test')
     print('extract mid slices')
     full = extract_groundtruth_heatmap(ds)
-    full[0] = full[0][:, :, :, :, 0]
+    print(full[0].shape)
     print('retrieving ground truth coordinates')
     coord_gt = retrieves_gt_coord(ds)
     # intialize metrics
@@ -223,7 +223,8 @@ def main():
     model = model.double()
     model.load_state_dict(torch.load(conf['weights'])['model_weights'])
     for i in range(len(coord_gt)):
-        prediction_coordinates(full[0][i][:, :, :], model, coord_gt, i)
+        print(full[0][i][0].shape)
+        prediction_coordinates(full[0][i][0], model, coord_gt, i)
         # Debuuging print (check gt coordinates) print(coord_gt[i])
         print('processing image {:d} out of {:d}'.format(i + 1, len(coord_gt)))
 
