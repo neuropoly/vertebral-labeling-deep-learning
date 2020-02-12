@@ -84,10 +84,10 @@ def mask2label(path_label):
         x = arr.nonzero()[0][i]
         y = arr.nonzero()[1][i]
         z = arr.nonzero()[2][i]
-        if arr[x, y, z] < 30:
+        if arr[x, y, z] < 30 and arr[x, y, z] != 1 :
             list_label_image.append([x, y, z, arr[x, y, z]])
     list_label_image.sort(key=lambda x: x[3])
-    print(list_label_image)
+    #print(list_label_image)
     return (list_label_image)
 
 
@@ -138,11 +138,11 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
         list_dir.remove('.DS_Store')
     all_file = len(list_dir)
     if split == 'train':
-        end = int(np.round(all_file*0.4))
+        end = int(np.round(all_file*0.6))
         begin = 0
     elif split == 'test':
-        begin = int(np.round(all_file * 0.5))
-        end = int(np.round(all_file*0.7))
+        begin = int(np.round(all_file * 0.85))
+        end = int(np.round(all_file*1))
     for i in range(begin, end):
         path_tmp = DataSet_path + list_dir[i] + '/'
         if mode != 2:
@@ -160,33 +160,46 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
             mid_slice_t2 = get_midNifti(path_tmp + 'T2W_straight.nii.gz', index_mid)
         if mode == 2:
             mid_slice = mid_slice_t2
-        if mid_slice.shape[0] > 200:
-            print('removed')
-            pass
-        elif mid_slice.shape[1] >200:
-            print('removed')
-            pass
+        if split == 'train':
+            if mid_slice.shape[0] > 300:
+                print('removed')
+                pass
+            elif mid_slice.shape[1] > 300:
+                print('removed')
+                pass
+            else:
+                if mode != 2:
+                    ds_image.append(mid_slice)
+                    ds_label.append(tmp_label)
+                if mode != 1:
+                    ds_image.append(mid_slice_t2)
+                    ds_label.append(tmp_label_t2)
         else:
             if mode != 2:
-                ds_image.append(mid_slice)
-                ds_label.append(tmp_label)
+                    ds_image.append(mid_slice)
+                    ds_label.append(tmp_label)
             if mode != 1:
                 ds_image.append(mid_slice_t2)
                 ds_label.append(tmp_label_t2)
-
     ds_image = images_normalization(ds_image)
 
     # Zero padding
-    if split == 'train':
-        print('Doing zero-padding ')
-        ds_image = add_zero_padding(ds_image, x_val=150, y_val=200)
-    if split == 'test': 
+    if 1:
+        max_y=0
+        max_x=0
         for i in range (len(ds_image)):
-            ds_image[i] = np.expand_dims(ds_image[i],-1)
+            #ds_image[i] = np.expand_dims(ds_image[i],-1)
+            if ds_image[i].shape[1] > max_y:
+                max_y = ds_image[i].shape[1]
+            if ds_image[i].shape[0] > max_x:
+                max_x = ds_image[i].shape[0]
+
+    ds_image = add_zero_padding(ds_image, x_val=max_x+1, y_val=max_y+1)
     # val_ds_img = add_zero_padding(val_ds_img, x_val=size_val, y_val=size_val)
     # test_ds_img = add_zero_padding(test_ds_img, x_val=size_val, y_val=size_val)
-
     # Convert images to np.array
-    ds_image = np.array(ds_image)
+    #print(ds_image)
+    #ds_image2 = np.array(ds_image)
+    #print(ds_image.shape)
 
     return [ds_image, ds_label]

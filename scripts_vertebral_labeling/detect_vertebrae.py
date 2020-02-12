@@ -86,12 +86,14 @@ def main(args=None):
     sct.printv('retrieving input...')
     Im_input.change_orientation('RPI')
     arr = np.array(Im_input.data)
+    #debugging
+
     sct.printv(arr.shape)
     ind = int(np.round(arr.shape[0] / 2))
-    input = np.expand_dims(np.mean(arr[ind - 2:ind + 2, :, :], 0),-1)
+    inp = np.expand_dims(np.mean(arr[ind - 2:ind + 2, :, :], 0),-1)
     sct.printv('Predicting coordinate')
     
-    coord = prediction_coordinates(input, model, [0,0], 0, test=False)
+    coord = prediction_coordinates(inp, model, [0,0], 0, test=False)
     mask_out = np.zeros(arr.shape)
     if len(coord) < 2:
         sct.printv('Error did not work at all, you can try with a different threshold')

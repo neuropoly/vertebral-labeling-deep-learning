@@ -79,11 +79,12 @@ def extract_all(list_coord_label, shape_im=(1, 150, 200)):
     :param shape_im: shape of output image with zero padding
     :return: a 2d heatmap image.
     """
-    final = np.zeros(shape_im)
+    shape_tmp = (1,shape_im[0],shape_im[1])
+    final = np.zeros(shape_tmp)
     for x in list_coord_label:
-        train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
-        for w in range(shape_im[1]):
-            for h in range(shape_im[2]):
+        train_lbs_tmp_mask = label2MaskMap_GT(x, shape_tmp)
+        for w in range(shape_im[0]):
+            for h in range(shape_im[1]):
                 final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
     return (final)
 
@@ -103,7 +104,7 @@ def extract_groundtruth_heatmap(DataSet):
     train_ds_img = np.array(train_ds_img)
 
     for i in range(len(train_ds_label)):
-        final = extract_all(train_ds_label[i])
+        final = extract_all(train_ds_label[i],shape_im = train_ds_img[0].shape)
         tmp_train_labels[i] = normalize(final[0, :, :])
 
     tmp_train_labels = np.array(tmp_train_labels)
@@ -131,10 +132,10 @@ class image_Dataset(Dataset):
         image,mask = RandomHorizontalFlip()(image,mask)
 
         # Random vertical flipping
-        image,mask = RandomVerticalFlip()(image,mask)
+        #image,mask = RandomVerticalFlip()(image,mask)
         #random90 flipping
 
-        image,mask = RandomangleFlip()(image,mask)
+       # image,mask = RandomangleFlip()(image,mask)
 
         # Transform to tensor
         image,mask = ToTensor()(image,mask)

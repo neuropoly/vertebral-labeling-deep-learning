@@ -66,7 +66,7 @@ def main():
     # criterion can be loss_l1 or loss_l2
     criterion = loss_l2
 
-    solver = optim.Adam(model.parameters(), lr=0.00005)
+    solver = optim.Adam(model.parameters(), lr=0.0000005)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(solver, 32, eta_min=0.00000005, last_epoch=-1)
     # if you need  focal dice : loss_fcd = FocalDiceLoss()
     best_val_loss = 10000
