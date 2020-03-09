@@ -48,6 +48,11 @@ def get_parser():
         help="threshold",
         metavar=Metavar.str,
     )
+    optional.add_argument(
+        '-o',
+        help="name",
+        metavar=Metavar.file,
+    )
 
     return parser
 
@@ -104,7 +109,10 @@ def main(args=None):
     imsh=arr.shape
     to_save = Image(param=[imsh[0],imsh[1],imsh[2]],hdr=Im_input.header)
     to_save.data = mask_out
-    to_save.save('labels_first_try.nii')
+    if arguments.o is not None:
+        to_save.save(arguments.o)
+    else:
+        to_save.save('labels_first_try.nii')
 
 if __name__ == "__main__":
     main()

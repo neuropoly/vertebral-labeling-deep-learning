@@ -40,14 +40,14 @@ def Faux_pos(gt, pred, tot):
     for i in range(len(pred)):
         node = np.array([pred[i][0], pred[i][1]])
         h = closest_node(node, gt)
-        print(gt)
+        #print(gt)
         if (abs(node[0] - gt[h][0])) > 10:
             c = c + 1
-            print(node)
-            print(gt[h])
+            #print(node)
+            #print(gt[h])
         elif h in already_used:
-            print(gt[h])
-            print('already_used')
+            #print(gt[h])
+            #print('already_used')
             c = c + 1
     return c
 
