@@ -25,7 +25,8 @@ def main():
     # Path to data is stored in config file
     path = conf['path_to_data']
     print('load dataset')
-    ds = load_Data_Bids2Array(path, mode=conf['mode'], split='train')
+    goal = conf['c2_or_all']
+    ds = load_Data_Bids2Array(path, mode=conf['mode'], split='train', aim=goal)
     print('creating heatmap')
     full = extract_groundtruth_heatmap(ds)
 
@@ -66,8 +67,8 @@ def main():
     # criterion can be loss_l1 or loss_l2
     criterion = loss_l2
 
-    solver = optim.Adam(model.parameters(), lr=0.0000005)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(solver, 32, eta_min=0.00000005, last_epoch=-1)
+    solver = optim.Adam(model.parameters(), lr=0.0005)
+    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(solver, 32, eta_min=0.00000005, last_epoch=-1)
     # if you need  focal dice : loss_fcd = FocalDiceLoss()
     best_val_loss = 10000
     patience = 0
@@ -90,8 +91,8 @@ def main():
                 loss_wing.backward(retain_graph=True)
                 loss_dice.backward()
                 solver.step()
-                print(scheduler.get_lr())
-                scheduler.step()
+                #print(scheduler.get_lr())
+                #scheduler.step()
 
             with torch.no_grad():
                 print('val_mode')

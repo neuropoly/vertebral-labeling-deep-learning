@@ -8,7 +8,7 @@ from Data2array import *
 import matplotlib.pyplot as plt
 import PIL
 from transform_spe import * 
-
+import skimage 
 # normalize Image
 def normalize(arr):
     ma = arr.max()
@@ -125,9 +125,10 @@ class image_Dataset(Dataset):
         self.target_paths = target_paths
     
     def transform(self, image, mask):
-
-
-
+        print(image.shape)
+        image = normalize(image[:,:,0]) 
+        image = skimage.exposure.equalize_adapthist(image,kernel_size=5,clip_limit=0.05)
+        image = np.expand_dims(image,-1)
         # Random horizontal flipping
         image,mask = RandomHorizontalFlip()(image,mask)
 

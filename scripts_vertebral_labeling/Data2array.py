@@ -69,7 +69,7 @@ def add_zero_padding(img_list, x_val=512, y_val=512):
     return img_zero_padding_list
 
 
-def mask2label(path_label):
+def mask2label(path_label,aim='full'):
     """
     Convert nifti image to an array of coordinates
     :param path_label: path of nifti image
@@ -84,10 +84,13 @@ def mask2label(path_label):
         x = arr.nonzero()[0][i]
         y = arr.nonzero()[1][i]
         z = arr.nonzero()[2][i]
-        if arr[x, y, z] < 30 and arr[x, y, z] != 1 :
-            list_label_image.append([x, y, z, arr[x, y, z]])
+        if aim == 'full':
+            if arr[x, y, z] == 3  and arr[x, y, z] != 1 :
+                list_label_image.append([x, y, z, arr[x, y, z]])
+        elif aim == 'c2':
+            if arr[x,y,z] == 3:
+                list_label_image.append([x, y, z, arr[x, y, z]])
     list_label_image.sort(key=lambda x: x[3])
-    #print(list_label_image)
     return (list_label_image)
 
 
@@ -120,7 +123,7 @@ def images_normalization(img_list, std=True):
     return img_norm_list
 
 
-def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
+def load_Data_Bids2Array(DataSet_path, mode=0, split='train',aim='full'):
     """
     Load image into an array. array[0] will represent 2D images
     array[1] will be list of corresponding ground truth coordinates
@@ -138,7 +141,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
         list_dir.remove('.DS_Store')
     all_file = len(list_dir)
     if split == 'train':
-        end = int(np.round(all_file*0.6))
+        end = int(np.round(all_file*0.3))
         begin = 0
     elif split == 'test':
         begin = int(np.round(all_file * 0.85))
@@ -161,7 +164,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train'):
         if mode == 2:
             mid_slice = mid_slice_t2
         if split == 'train':
-            if mid_slice.shape[0] > 300:
+            if mid_slice.shape[0] > 250:
                 print('removed')
                 pass
             elif mid_slice.shape[1] > 300:

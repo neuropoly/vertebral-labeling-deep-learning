@@ -19,15 +19,17 @@ import yaml
 # take an Image as input and output the predicted coordinates.
 # Post processing to remove obvious false positive
 # Compute metrics as well and add it to previously existing table
-def prediction_coordinates(Image, model, coord_gt, i, test=True):
+def prediction_coordinates(Image, model, coord_gt, i, test=True, aim='full'):
     global cuda_available
     cuda_available = torch.cuda.is_available()
     shape_im = Image.shape
     shape_im = sorted(shape_im)
-    final, coordinates = infer_image(Image, model)
+    if aim == 'c2':
+        final, coordinates = infer_image(Image, model,thr=0.99)
     final = np.zeros(shape_im)
     print('before post_proc')
-    if test:
+    print(coordinates)
+    if test and len(coordinates)>21:
         for x in coordinates:
             train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
             for w in range(shape_im[1]):
@@ -36,7 +38,7 @@ def prediction_coordinates(Image, model, coord_gt, i, test=True):
     print('post_processing')
     final = np.zeros(shape_im)
     print(coordinates)
-    if len(coordinates) > 2:
+    if len(coordinates) > 0:
         coord_out = post_processing(coordinates)
 
         if len(coord_out) < 2:
@@ -50,15 +52,15 @@ def prediction_coordinates(Image, model, coord_gt, i, test=True):
             fn = Faux_neg(coord_gt[i], coord_out)
             faux_pos.append(fp)
             faux_neg.append(fn)
-            for x in coord_out:
-                train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
-                for w in range(shape_im[1]):
-                    for h in range(shape_im[2]):
-                        final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
+            #for x in coord_out:
+             #   train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
+              #  for w in range(shape_im[1]):
+              #      for h in range(shape_im[2]):
+               #         final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
         else:
             return coord_out
     else :
-        print('Not working on this image')
+        return(coordinates)
 
 
 def post_processing(coordinates):
@@ -165,7 +167,7 @@ def retrieves_gt_coord(ds):
 
 
 # 'c' is a parameter used for clahe clip limit value.
-def infer_image(image, model ,c=0.02):
+def infer_image(image, model ,c=0.02, thr=0.3):
     coord_out = []
     shape_im = image.shape
     final = np.zeros((shape_im[0], shape_im[1]))
@@ -174,7 +176,7 @@ def infer_image(image, model ,c=0.02):
     # retrieve 2-D for transformation (CLAHE & Normalization )
     patch = image[:, :, 0]
     patch = normalize(patch)
-    patch = skimage.exposure.equalize_adapthist(patch,kernel_size=5,clip_limit=0.05)
+    patch = skimage.exposure.equalize_adapthist(patch,kernel_size=10,clip_limit=0.02)
     patch = np.expand_dims(patch, axis=-1)
     patch = transforms.ToTensor()(patch).unsqueeze(0)
     if cuda_available:
@@ -182,8 +184,16 @@ def infer_image(image, model ,c=0.02):
     patch = patch.double()
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
-    #retrieveal of coordinates by looking at local max which value are > 0.5
-    coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=7, threshold_rel=0.4)
+    profile = np.sum(patch_out[0, 0, :, :],axis=0)
+    np.save('prof.npy',profile)
+    plt.plot(profile)
+    plt.show()
+    plt.savefig('profile_test.png')
+    plt.imshow(patch_out[0, 0, :, :])
+    plt.savefig('heatmp.png')
+
+    #retrieveal of coordinates by looking at local max which value are > th determined previously
+    coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_rel=thr)
     for w in range(patch.shape[0]):
         for h in range(patch.shape[1]):
             final[w, h] = max(final[w, h], patch_out[0, 0, w, h])
@@ -204,7 +214,8 @@ def main():
     # put image into an array
     # to do put path in a specific conf file
     path = conf['path_to_data']
-    ds = load_Data_Bids2Array(path, mode=conf['mode'], split='test')
+    goal = conf['c2 or full']
+    ds = load_Data_Bids2Array(path, mode=conf['mode'], split='test', aim=goal)
     print('extract mid slices')
     full = extract_groundtruth_heatmap(ds)
     print(full[0].shape)
@@ -226,8 +237,12 @@ def main():
     model = ModelCountception_v2(inplanes=1, outplanes=1)
     if cuda_available:
         model = model.cuda()
-    model = model.double()
-    model.load_state_dict(torch.load(conf['weights'])['model_weights'])
+        model = model.double()
+        model.load_state_dict(torch.load(conf['weights'])['model_weights'])
+    else: 
+        model = model.double()
+        model.load_state_dict(torch.load(conf['weights'],map_location='cpu')['model_weights'])
+
     for i in range(len(coord_gt)):
         print(full[0][i].shape)
         prediction_coordinates(full[0][i][:,:,:,0], model, coord_gt, i)
