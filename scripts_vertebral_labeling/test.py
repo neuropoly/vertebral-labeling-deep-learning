@@ -12,55 +12,45 @@ from Data2array import *
 import matplotlib.pyplot as plt
 from skimage.feature import peak_local_max
 from models import *
-import skimage 
+import skimage
 import yaml
 
 
 # take an Image as input and output the predicted coordinates.
 # Post processing to remove obvious false positive
 # Compute metrics as well and add it to previously existing table
-def prediction_coordinates(Image, model, coord_gt, i, test=True, aim='full'):
+def prediction_coordinates(Image, model, coord_gt, i, test=True, aim='full', threshold=0.3, heatmap=0):
     global cuda_available
     cuda_available = torch.cuda.is_available()
     shape_im = Image.shape
     shape_im = sorted(shape_im)
     if aim == 'c2':
-        final, coordinates = infer_image(Image, model,thr=0.99)
-    final = np.zeros(shape_im)
-    print('before post_proc')
-    print(coordinates)
-    if test and len(coordinates)>21:
-        for x in coordinates:
-            train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
-            for w in range(shape_im[1]):
-                for h in range(shape_im[2]):
-                    final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
-    print('post_processing')
+        final, coordinates = infer_image(Image, model, thr=0.99)
+    else:
+        final, coordinates = infer_image(Image, model, thr=threshold)
+    if heatmap == 1:
+        return final
+    sct.printv('post_processing')
     final = np.zeros(shape_im)
     print(coordinates)
     if len(coordinates) > 0:
         coord_out = post_processing(coordinates)
 
         if len(coord_out) < 2:
-            coord_out=coordinates
+            coord_out = coordinates
         if test:
             print('calculating metrics on image')
-            #print(coord_out)
+            # print(coord_out)
             mesure_err_disc(coord_gt[i], coord_out, distance_l2)
             mesure_err_z(coord_gt[i], coord_out, zdis)
             fp = Faux_pos(coord_gt[i], coord_out, tot)
             fn = Faux_neg(coord_gt[i], coord_out)
             faux_pos.append(fp)
             faux_neg.append(fn)
-            #for x in coord_out:
-             #   train_lbs_tmp_mask = label2MaskMap_GT(x, shape_im)
-              #  for w in range(shape_im[1]):
-              #      for h in range(shape_im[2]):
-               #         final[0, w, h] = max(final[0, w, h], train_lbs_tmp_mask[w, h])
         else:
             return coord_out
-    else :
-        return(coordinates)
+    else:
+        return (coordinates)
 
 
 def post_processing(coordinates):
@@ -150,16 +140,16 @@ def retrieves_gt_coord(ds):
     coord_retrieved = []
     for i in range(len(ds[1])):
         coord_tmp = [[], []]
-        print('subnum '+str(i))
+        print('subnum ' + str(i))
         print(ds[1][i])
 
         for j in range(len(ds[1][i])):
             if ds[1][i][j][3] == 1 or ds[1][i][j][3] > 30:
-                print('remove'+str(ds[1][i][j][3]))
+                print('remove' + str(ds[1][i][j][3]))
                 pass
             else:
                 print(ds[1][i][j][3])
-                print(ds[1][i][j][2],ds[1][i][j][1])
+                print(ds[1][i][j][2], ds[1][i][j][1])
                 coord_tmp[0].append(ds[1][i][j][2])
                 coord_tmp[1].append(ds[1][i][j][1])
         coord_retrieved.append(coord_tmp)
@@ -167,7 +157,8 @@ def retrieves_gt_coord(ds):
 
 
 # 'c' is a parameter used for clahe clip limit value.
-def infer_image(image, model ,c=0.02, thr=0.3):
+# thr is a pramater for coordinate retrieval. Relative threshold value in sklearn.peak_local_max
+def infer_image(image, model, c=0.02, thr=0.3):
     coord_out = []
     shape_im = image.shape
     final = np.zeros((shape_im[0], shape_im[1]))
@@ -176,7 +167,7 @@ def infer_image(image, model ,c=0.02, thr=0.3):
     # retrieve 2-D for transformation (CLAHE & Normalization )
     patch = image[:, :, 0]
     patch = normalize(patch)
-    patch = skimage.exposure.equalize_adapthist(patch,kernel_size=10,clip_limit=0.02)
+    patch = skimage.exposure.equalize_adapthist(patch, kernel_size=10, clip_limit=0.02)
     patch = np.expand_dims(patch, axis=-1)
     patch = transforms.ToTensor()(patch).unsqueeze(0)
     if cuda_available:
@@ -184,15 +175,8 @@ def infer_image(image, model ,c=0.02, thr=0.3):
     patch = patch.double()
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
-    profile = np.sum(patch_out[0, 0, :, :],axis=0)
-    np.save('prof.npy',profile)
-    plt.plot(profile)
-    plt.show()
-    plt.savefig('profile_test.png')
-    plt.imshow(patch_out[0, 0, :, :])
-    plt.savefig('heatmp.png')
 
-    #retrieveal of coordinates by looking at local max which value are > th determined previously
+    # retrieveal of coordinates by looking at local max which value are > th determined previously
     coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_rel=thr)
     for w in range(patch.shape[0]):
         for h in range(patch.shape[1]):
@@ -203,7 +187,8 @@ def infer_image(image, model ,c=0.02, thr=0.3):
         coord_out = [0, 0]
     return (final, coord_out)
 
-#main script
+
+# main script
 
 def main():
     global cuda_available
@@ -233,19 +218,18 @@ def main():
     faux_neg = []
     tot = []
 
-
     model = ModelCountception_v2(inplanes=1, outplanes=1)
     if cuda_available:
         model = model.cuda()
         model = model.double()
         model.load_state_dict(torch.load(conf['weights'])['model_weights'])
-    else: 
+    else:
         model = model.double()
-        model.load_state_dict(torch.load(conf['weights'],map_location='cpu')['model_weights'])
+        model.load_state_dict(torch.load(conf['weights'], map_location='cpu')['model_weights'])
 
     for i in range(len(coord_gt)):
         print(full[0][i].shape)
-        prediction_coordinates(full[0][i][:,:,:,0], model, coord_gt, i)
+        prediction_coordinates(full[0][i][:, :, :, 0], model, coord_gt, i)
         # Debuuging print (check gt coordinates) print(coord_gt[i])
         print('processing image {:d} out of {:d}'.format(i + 1, len(coord_gt)))
 
@@ -257,6 +241,7 @@ def main():
     print('total number of points ' + str(np.sum(tot)))
     print('number of faux neg ' + str(np.sum(faux_neg)))
     print('number of faux pos ' + str(np.sum(faux_pos)))
+
 
 if __name__ == "__main__":
     main()

@@ -7,8 +7,10 @@ from torch.utils.data import Dataset
 from Data2array import *
 import matplotlib.pyplot as plt
 import PIL
-from transform_spe import * 
-import skimage 
+from transform_spe import *
+import skimage
+
+
 # normalize Image
 def normalize(arr):
     ma = arr.max()
@@ -79,7 +81,7 @@ def extract_all(list_coord_label, shape_im=(1, 150, 200)):
     :param shape_im: shape of output image with zero padding
     :return: a 2d heatmap image.
     """
-    shape_tmp = (1,shape_im[0],shape_im[1])
+    shape_tmp = (1, shape_im[0], shape_im[1])
     final = np.zeros(shape_tmp)
     for x in list_coord_label:
         train_lbs_tmp_mask = label2MaskMap_GT(x, shape_tmp)
@@ -104,7 +106,7 @@ def extract_groundtruth_heatmap(DataSet):
     train_ds_img = np.array(train_ds_img)
 
     for i in range(len(train_ds_label)):
-        final = extract_all(train_ds_label[i],shape_im = train_ds_img[0].shape)
+        final = extract_all(train_ds_label[i], shape_im=train_ds_img[0].shape)
         tmp_train_labels[i] = normalize(final[0, :, :])
 
     tmp_train_labels = np.array(tmp_train_labels)
@@ -123,36 +125,34 @@ class image_Dataset(Dataset):
 
         self.image_paths = image_paths
         self.target_paths = target_paths
-    
+
     def transform(self, image, mask):
         print(image.shape)
-        image = normalize(image[:,:,0]) 
-        image = skimage.exposure.equalize_adapthist(image,kernel_size=5,clip_limit=0.05)
-        image = np.expand_dims(image,-1)
+        image = normalize(image[:, :, 0])
+        image = skimage.exposure.equalize_adapthist(image, kernel_size=5, clip_limit=0.05)
+        image = np.expand_dims(image, -1)
         # Random horizontal flipping
-        image,mask = RandomHorizontalFlip()(image,mask)
+        image, mask = RandomHorizontalFlip()(image, mask)
 
         # Random vertical flipping
-        #image,mask = RandomVerticalFlip()(image,mask)
-        #random90 flipping
+        # image,mask = RandomVerticalFlip()(image,mask)
+        # random90 flipping
 
-       # image,mask = RandomangleFlip()(image,mask)
+        # image,mask = RandomangleFlip()(image,mask)
 
         # Transform to tensor
-        image,mask = ToTensor()(image,mask)
+        image, mask = ToTensor()(image, mask)
 
         return image, mask
-        
 
     def __getitem__(self, index):
         mask = self.target_paths[index]
-        mask = mask.astype(np.float32) 
+        mask = mask.astype(np.float32)
 
         image = self.image_paths[index]
         image = image.astype(np.float32)
 
-        t_image, t_mask  = self.transform(image, mask)
-        
+        t_image, t_mask = self.transform(image, mask)
 
         return t_image, t_mask
 

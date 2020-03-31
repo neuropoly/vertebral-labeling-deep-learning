@@ -1,7 +1,7 @@
 import sys
 import os
 import argparse
-sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
+sys.path.insert(0, '~/sct/sct/')
 from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
 from spinalcordtoolbox.image import Image
 from spinalcordtoolbox.utils import Metavar, SmartFormatter
@@ -12,7 +12,7 @@ from models import *
 from test import *
 from Data2array import *
 import numpy as np
-sys.path.insert(0, '/Users/lurou_admin/Desktop/sct/sct')
+sys.path.insert(0, '~/sct/sct')
 import nibabel as nib
 
 
@@ -80,7 +80,7 @@ def main(args=None):
         model = model.double()
 
     if contrast == 't1':
-        model.load_state_dict(torch.load('checkpoints/Countception_c2T1.model')['model_weights'])
+        model.load_state_dict(torch.load('checkpoints/Countception_c2T1.model',)['model_weights'])
 
     elif contrast == 't2':
         model.load_state_dict(torch.load('checkpoints/Countception_c2.model')['model_weights'])
@@ -95,7 +95,12 @@ def main(args=None):
 
     sct.printv(arr.shape)
     ind = int(np.round(arr.shape[0] / 2))
-    inp = np.expand_dims(np.mean(arr[ind - 2:ind + 2, :, :], 0),-1)
+    inp = np.mean(arr[ind - 2:ind + 2, :, :], 0)
+    pad = int(np.ceil(arr.shape[2] / 32))*32
+    img_tmp = np.zeros((160, pad), dtype=np.float64)
+    img_tmp[0:inp.shape[0], 0:inp.shape[1]] = inp
+    sct.printv(inp.shape)
+    inp = np.expand_dims(img_tmp,-1)
     sct.printv('Predicting coordinate')
     
     coord = prediction_coordinates(inp, model, [0,0], 0, test=False, aim='c2')

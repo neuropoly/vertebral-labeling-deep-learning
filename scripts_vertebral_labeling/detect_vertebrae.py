@@ -1,7 +1,8 @@
 import sys
 import os
 import argparse
-sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
+
+sys.path.insert(0, '~/sct/sct/')
 from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
 from spinalcordtoolbox.image import Image
 from spinalcordtoolbox.utils import Metavar, SmartFormatter
@@ -12,7 +13,8 @@ from models import *
 from test import *
 from Data2array import *
 import numpy as np
-sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
+
+sys.path.insert(0, '~/sct/sct/')
 import nibabel as nib
 
 
@@ -43,6 +45,7 @@ def get_parser():
         '--help',
         action='help',
         help="Show this help message and exit")
+
     optional.add_argument(
         '-t',
         help="threshold",
@@ -53,6 +56,17 @@ def get_parser():
         help="name",
         metavar=Metavar.file,
     )
+    optional.add_argument(
+        '-m',
+        help="save nii heatmap if 1, label if 0",
+        default=0,
+    )
+    optional.add_argument(
+        '-net',
+        help="Network to use",
+        default='CC',
+    )
+
 
     return parser
 
@@ -70,49 +84,74 @@ def main(args=None):
     arguments = parser.parse_args(args=args)
     Im_input = Image(arguments.i)
     contrast = arguments.c
-
+    heatmap = arguments.m
     global cuda_available
     cuda_available = torch.cuda.is_available()
+    if arguments.net == 'CC':
 
-    model = ModelCountception_v2(inplanes=1, outplanes=1)
+        model = ModelCountception_v2(inplanes=1, outplanes=1)
+
+        if contrast == 't1':
+            model.load_state_dict(torch.load('checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
+
+        elif contrast == 't2':
+            model.load_state_dict(torch.load('checkpoints/Countception_L2T2.model', map_location='cpu')['model_weights'])
+
+        else:
+            sct.printv('Error...unknown contrast. please select between t2 and t1.')
+            return 100
+    if arguments.net == 'AttU':
+        model = AttU_Net()
+
+        if contrast == 't1':
+            model.load_state_dict(torch.load('checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
+
+        elif contrast == 't2':
+            model.load_state_dict(torch.load('checkpoints/attunet_fullvT2.model', map_location='cpu')['model_weights'])
+
+        else:
+            sct.printv('Error...unknown contrast. please select between t2 and t1.')
+            return 100
+
     if cuda_available:
         model = model.cuda()
         model = model.double()
 
-    if contrast == 't1':
-        model.load_state_dict(torch.load('checkpoints/Countception_L2T1.model')['model_weights'])
-
-    elif contrast == 't2':
-        model.load_state_dict(torch.load('checkpoints/Countception_L2T2.model')['model_weights'])
-
-    else:
-        sct.printv('Error...unknown contrast. please select between t2 and t1.')
-        return 100
     sct.printv('retrieving input...')
     Im_input.change_orientation('RPI')
     arr = np.array(Im_input.data)
-    #debugging
+    # debugging
 
     sct.printv(arr.shape)
     ind = int(np.round(arr.shape[0] / 2))
-    inp = np.expand_dims(np.mean(arr[ind - 2:ind + 2, :, :], 0),-1)
+    inp = np.expand_dims(np.mean(arr[ind - 2:ind + 2, :, :], 0), -1)
     sct.printv('Predicting coordinate')
-    
-    coord = prediction_coordinates(inp, model, [0,0], 0, test=False)
-    mask_out = np.zeros(arr.shape)
-    if len(coord) < 2:
-        sct.printv('Error did not work at all, you can try with a different threshold')
 
-    for x in coord:
-        mask_out[ind, x[1], x[0]] = 10
-    sct.printv('saving image')
-    imsh=arr.shape
-    to_save = Image(param=[imsh[0],imsh[1],imsh[2]],hdr=Im_input.header)
-    to_save.data = mask_out
-    if arguments.o is not None:
-        to_save.save(arguments.o)
+    coord = prediction_coordinates(inp, model, [0, 0], 0, test=False, aim='full')
+    if heatmap == 1:
+        imsh = coord.shape
+        to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
+        to_save.data = coord
+        if arguments.o is not None:
+            to_save.save(arguments.o)
+        else:
+            to_save.save('labels_first_try.nii')
     else:
-        to_save.save('labels_first_try.nii')
+        mask_out = np.zeros(arr.shape)
+        if len(coord) < 2:
+            sct.printv('Error did not work at all, you can try with a different threshold')
+
+        for x in coord:
+            mask_out[ind, x[1], x[0]] = 10
+        sct.printv('saving image')
+        imsh = arr.shape
+        to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
+        to_save.data = mask_out
+        if arguments.o is not None:
+            to_save.save(arguments.o)
+        else:
+            to_save.save('labels_first_try.nii')
+
 
 if __name__ == "__main__":
     main()

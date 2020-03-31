@@ -1,8 +1,7 @@
-
 # About the license: see the file license.md
 """
 visit https://github.com/neuropoly/ivado-medical-imaging
-For dice, Focaldice, GeneralizedDice and focal_loass implementation
+For dice, Focaldice, GeneralizedDice and focal_loss implementation
 """
 
 import cv2
@@ -32,7 +31,7 @@ def AdapWingLoss(pre_hm, gt_hm):
     hm_num = gt_hm.size()[1]
 
     mask = torch.zeros_like(gt_hm)
-    #W=10
+    # W=10
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     for i in range(batch_size):
         img_list = []
@@ -94,7 +93,7 @@ class FocalLoss(nn.Module):
 
 class FocalDiceLoss(nn.Module):
     """
-    Motivated by https://arxiv.org/pdf/1809.00076.pdf
+    Based on https://arxiv.org/pdf/1809.00076.pdf
     :param beta: to bring the dice and focal losses at similar scale.
     :param gamma: gamma value used in the focal loss.
     :param alpha: alpha value used in the focal loss.

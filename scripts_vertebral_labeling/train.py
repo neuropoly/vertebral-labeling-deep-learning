@@ -32,7 +32,6 @@ def main():
 
     # put it in the torch loader
     # The 60 first pourcent are for training the 25 next are for validation in an attempt to keep the 15 last for test
-    # TO DO : Implement something to load only this 85 % and not all
     train_idx = int(np.round(len(full[0]) * 0.75))
     validation_idx = int(np.round(len(full[0])))
     print(full[0].shape)
@@ -40,7 +39,7 @@ def main():
     # put it inside a Pytorch form. The image_Dataset only convert Image to Tensor
     full_dataset_train = image_Dataset(image_paths=full[0][0:train_idx], target_paths=full[1][:train_idx])
     full_dataset_val = image_Dataset(image_paths=full[0][train_idx:validation_idx],
-                                  target_paths=full[1][train_idx:validation_idx])
+                                     target_paths=full[1][train_idx:validation_idx])
 
     # show the number of image to be processed during training
     print('Training on' + str(len(full_dataset_train)) + 'pictures')
@@ -58,17 +57,17 @@ def main():
     model = model.double()
 
     if conf['previous_weights'] != '':
-       # if path.exist(conf['previous_weights']):
-         print('loading previous weights')
-         model.load_state_dict(torch.load(conf['previous_weights'])['model_weights'])
-        #else:
-         #   print('wrong weights path. Starting with random initialization')
+        # if path.exist(conf['previous_weights']):
+        print('loading previous weights')
+        model.load_state_dict(torch.load(conf['previous_weights'])['model_weights'])
+    # else:
+    #   print('wrong weights path. Starting with random initialization')
 
     # criterion can be loss_l1 or loss_l2
     criterion = loss_l2
 
     solver = optim.Adam(model.parameters(), lr=0.0005)
-    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(solver, 32, eta_min=0.00000005, last_epoch=-1)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(solver, 32, eta_min=0.00000005, last_epoch=-1)
     # if you need  focal dice : loss_fcd = FocalDiceLoss()
     best_val_loss = 10000
     patience = 0
@@ -85,14 +84,14 @@ def main():
                 loss_wing = AdapWingLoss(output, target)
                 loss_dice = dice_loss(output, target)
 
-            # Zero grad
+                # Zero grad
                 model.zero_grad()
                 loss.backward(retain_graph=True)
                 loss_wing.backward(retain_graph=True)
                 loss_dice.backward()
                 solver.step()
-                #print(scheduler.get_lr())
-                #scheduler.step()
+                # print(scheduler.get_lr())
+                # scheduler.step()
 
             with torch.no_grad():
                 print('val_mode')
@@ -102,34 +101,34 @@ def main():
                         inputs = inputs.double().cuda()
                         target = target.double().cuda()
                     output = model.forward(inputs)
-                    #every X epochs we save an image that show the ouput heatmap to check improvement
-                    if conf['save_heatmap'] !=0 :
+                    # every X epochs we save an image that show the ouput heatmap to check improvement
+                    if conf['save_heatmap'] != 0:
                         if (epoch + 1) % conf['save_heatmap'] == 0:
                             inp = inputs.data.cpu().numpy()
                             heat = output.data.cpu().numpy()
                             plt.imshow(inp[0, 0, :, :])
                             plt.show()
-                            plt.savefig('input' + str(epoch)+ '.png')
+                            plt.savefig('input' + str(epoch) + '.png')
                             target_i = target.data.cpu().numpy()
                             plt.imshow(target_i[0, 0, :, :])
                             plt.show()
-                            plt.savefig('gt' + str(epoch)+ '.png')
-                            plt.imshow(heat[0, 0, :, :] )
+                            plt.savefig('gt' + str(epoch) + '.png')
+                            plt.imshow(heat[0, 0, :, :])
                             plt.show()
                             plt.savefig('heatmap ' + str(epoch) + '.png')
                     val_loss.append(criterion(output, target).item())
 
                 print("Epoch", epoch, "- Validation Loss:", np.mean(val_loss))
 
-        # best model is saved.
-            if abs(np.mean(val_loss)) < best_val_loss and abs(abs(np.mean(val_loss)-best_val_loss)) > 0.5:
+            # best model is saved.
+            if abs(np.mean(val_loss)) < best_val_loss and abs(abs(np.mean(val_loss) - best_val_loss)) > 0.5:
                 print('New best loss, saving...')
                 best_val_loss = copy.deepcopy(abs(np.mean(val_loss)))
                 patience = 0
                 if conf['saved_model'] != '':
                     name = conf['saved_model']
                 else:
-                    name = 'Countception_train_defaultsave.model'
+                    name = 'train_defaultsave.model'
                 state = copy.deepcopy({'model_weights': model.state_dict()})
                 torch.save(state, name)
             else:
@@ -139,9 +138,10 @@ def main():
 
     except KeyboardInterrupt:
         print('saving model')
-        name = 'checkpoints/Countception_KeyboardInterrupt_save.model'
+        name = 'checkpoints/KeyboardInterrupt_save.model'
         state = {'model_weights': model.state_dict()}
         torch.save(state, name)
+
 
 if __name__ == "__main__":
     main()

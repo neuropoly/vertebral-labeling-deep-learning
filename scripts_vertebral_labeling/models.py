@@ -6,15 +6,11 @@ modifed from github https://github.com/roggirg/count-ception_mbm/blob/master/tra
 """
 
 import torch
-import torch.nn as nn
 import torch.nn.init as init
 import torch.nn as nn
 from torchvision import transforms
 
-from torch.utils.data import Dataset
-
 from torch.utils.data import DataLoader
-from torch import autograd, optim
 import torch.backends.cudnn as cudnn
 
 
