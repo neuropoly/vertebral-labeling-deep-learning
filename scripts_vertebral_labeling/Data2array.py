@@ -163,10 +163,10 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
         if mode == 2:
             mid_slice = mid_slice_t2
         if split == 'train':
-            if mid_slice.shape[0] > 250:
+            if mid_slice.shape[0] > 512:
                 print('removed')
                 pass
-            elif mid_slice.shape[1] > 300:
+            elif mid_slice.shape[1] > 512:
                 print('removed')
                 pass
             else:
@@ -196,7 +196,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
             if ds_image[i].shape[0] > max_x:
                 max_x = ds_image[i].shape[0]
 
-    ds_image = add_zero_padding(ds_image, x_val=max_x + 1, y_val=max_y + 1)
+    ds_image = add_zero_padding(ds_image, x_val=32*(int(np.ceil(max_x/32))), y_val=32*(int(np.ceil(max_y/32))))
     # val_ds_img = add_zero_padding(val_ds_img, x_val=size_val, y_val=size_val)
     # test_ds_img = add_zero_padding(test_ds_img, x_val=size_val, y_val=size_val)
     # Convert images to np.array

@@ -51,7 +51,11 @@ def main():
                             num_workers=0)
     print('generating model')
 
-    model = ModelCountception_v2(inplanes=1, outplanes=1)
+    if conf.model=='CC':
+        model = ModelCountception_v2(inplanes=1, outplanes=1)
+    elif conf['model']=='AttU':
+        model = AttU_Net()
+
     if cuda_available:
         model = model.cuda()
     model = model.double()
