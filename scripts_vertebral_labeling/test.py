@@ -14,6 +14,7 @@ from skimage.feature import peak_local_max
 from models import *
 import skimage
 import yaml
+import scripts.sct_utils as sct
 
 
 # take an Image as input and output the predicted coordinates.
@@ -175,6 +176,9 @@ def infer_image(image, model, c=0.02, thr=0.3):
     patch = patch.double()
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
+    plt.imshow(patch_out[0,0,:,:])
+    plt.show()
+    plt.savefig('heat_test.png')
 
     # retrieveal of coordinates by looking at local max which value are > th determined previously
     coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_rel=thr)

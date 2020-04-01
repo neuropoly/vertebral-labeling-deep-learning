@@ -1,8 +1,9 @@
 import sys
+sys.path.insert(0, '/home/lucas/sct/')
 import os
 import argparse
 
-sys.path.insert(0, '~/sct/sct/')
+
 from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
 from spinalcordtoolbox.image import Image
 from spinalcordtoolbox.utils import Metavar, SmartFormatter
@@ -14,7 +15,7 @@ from test import *
 from Data2array import *
 import numpy as np
 
-sys.path.insert(0, '~/sct/sct/')
+sys.path.insert(0, '~/sct/')
 import nibabel as nib
 
 
@@ -84,7 +85,7 @@ def main(args=None):
     arguments = parser.parse_args(args=args)
     Im_input = Image(arguments.i)
     contrast = arguments.c
-    heatmap = arguments.m
+    heatmap = int(arguments.m)
     global cuda_available
     cuda_available = torch.cuda.is_available()
     if arguments.net == 'CC':
@@ -115,7 +116,7 @@ def main(args=None):
 
     if cuda_available:
         model = model.cuda()
-        model = model.double()
+    model = model.double()
 
     sct.printv('retrieving input...')
     Im_input.change_orientation('RPI')
@@ -124,14 +125,27 @@ def main(args=None):
 
     sct.printv(arr.shape)
     ind = int(np.round(arr.shape[0] / 2))
-    inp = np.expand_dims(np.mean(arr[ind - 2:ind + 2, :, :], 0), -1)
+    inp = np.mean(arr[ind - 2:ind + 2, :, :], 0)
+    pad = int(np.ceil(arr.shape[2] / 32)) * 32
+    img_tmp = np.zeros((160, pad), dtype=np.float64)
+    img_tmp[0:inp.shape[0], 0:inp.shape[1]] = inp
+    sct.printv(inp.shape)
+    inp = np.expand_dims(img_tmp, -1)
+
     sct.printv('Predicting coordinate')
 
-    coord = prediction_coordinates(inp, model, [0, 0], 0, test=False, aim='full')
+    coord = prediction_coordinates(inp, model, [0, 0], 0, test=False, aim='full', heatmap=heatmap)
+
     if heatmap == 1:
-        imsh = coord.shape
+        sct.printv('saving heatmap')
+        imsh = arr.shape
+        #plt.imshow(coord)
+        #plt.show()
+        #plt.savefig('heat_test.png')
+        sct.printv(np.max(coord))
+        sct.printv(imsh[0], imsh[1], imsh[2])
         to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
-        to_save.data = coord
+        to_save.data[ind, :, :] = coord[:imsh[1], :imsh[2]]
         if arguments.o is not None:
             to_save.save(arguments.o)
         else:

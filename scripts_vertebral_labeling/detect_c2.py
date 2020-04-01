@@ -5,7 +5,7 @@ sys.path.insert(0, '~/sct/sct/')
 from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
 from spinalcordtoolbox.image import Image
 from spinalcordtoolbox.utils import Metavar, SmartFormatter
-import sct_utils as sct
+import scripts.sct_utils as sct
 
 import torch
 from models import *
