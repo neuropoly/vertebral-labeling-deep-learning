@@ -84,7 +84,7 @@ def mask2label(path_label, aim='full'):
         y = arr.nonzero()[1][i]
         z = arr.nonzero()[2][i]
         if aim == 'full':
-            if arr[x, y, z] == 3 and arr[x, y, z] != 1:
+            if arr[x, y, z] < 30 and arr[x, y, z] != 1:
                 list_label_image.append([x, y, z, arr[x, y, z]])
         elif aim == 'c2':
             if arr[x, y, z] == 3:
@@ -148,9 +148,15 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
     for i in range(begin, end):
         path_tmp = DataSet_path + list_dir[i] + '/'
         if mode != 2:
-            tmp_label = mask2label(path_tmp + 'T1_label-disc-manual_straight.nii.gz')
+            if os.path.exists(path_tmp + 'T1_label-disc-manual_straight.nii.gz'):
+                tmp_label = mask2label(path_tmp + 'T1_label-disc-manual_straight.nii.gz')
+            else:
+                continue
         if mode != 1:
-            tmp_label_t2 = mask2label(path_tmp + 'T2_label-disc-manual_straight.nii.gz')
+            if os.path.exists(path_tmp + 'T2_label-disc-manual_straight.nii.gz'):
+                tmp_label_t2 = mask2label(path_tmp + 'T2_label-disc-manual_straight.nii.gz')
+            else:
+                continue
 
         if mode != 1:
             index_mid = tmp_label_t2[0][0]

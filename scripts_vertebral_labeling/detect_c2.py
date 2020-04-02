@@ -19,7 +19,7 @@ import nibabel as nib
 def get_parser():
     # Mandatory arguments
     parser = argparse.ArgumentParser(
-        description="tools to detect and label vertebrae with countception deep learning network ",
+        description="tools to detect C2/C3 intervertebral disc with countception deep learning network ",
         epilog="EXAMPLES:\n",
         add_help=None,
         formatter_class=SmartFormatter,
@@ -50,8 +50,18 @@ def get_parser():
     )
     optional.add_argument(
         '-o',
-        help="name",
+        help="output name",
         metavar=Metavar.str,
+    )
+    optional.add_argument(
+        '-image',
+        help="if 1 Return an image as output,else return coord",
+        metavar=Metavar.int,
+    )
+    optional.add_argument(
+        '-net',
+        help="Network to use",
+        default='CC',
     )
 
     return parser
@@ -103,21 +113,26 @@ def main(args=None):
     inp = np.expand_dims(img_tmp,-1)
     sct.printv('Predicting coordinate')
     
-    coord = prediction_coordinates(inp, model, [0,0], 0, test=False, aim='c2')
+    coord = prediction_coordinates(inp, model, [0, 0], 0, test=False, aim='c2')
     mask_out = np.zeros(arr.shape)
-    if len(coord) < 1:
-        sct.printv('Error did not work at all, you can try with a different threshold')
+    if len(coord) < 1 or coord == [0, 0]:
+        sct.printv('C2/C3 detection failed. Please provide manual initialisation')
 
-    for x in coord:
-        mask_out[ind, x[1], x[0]] = 10
-    sct.printv('saving image')
-    imsh=arr.shape
-    to_save = Image(param=[imsh[0],imsh[1],imsh[2]],hdr=Im_input.header)
-    to_save.data = mask_out
-    if arguments.o is not None:
-        to_save.save(arguments.o)
+    if arguments.image == 1:
+
+        for x in coord:
+            mask_out[ind, x[1], x[0]] = 10
+        sct.printv('saving image')
+        imsh = arr.shape
+        to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
+        to_save.data = mask_out
+        if arguments.o is not None:
+            to_save.save(arguments.o)
+        else:
+            to_save.save('labels_c2.nii')
     else:
-        to_save.save('labels_first_try_c2.nii')
+        return coord
+
 
 if __name__ == "__main__":
     main()

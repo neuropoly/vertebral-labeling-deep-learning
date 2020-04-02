@@ -30,6 +30,7 @@ def prediction_coordinates(Image, model, coord_gt, i, test=True, aim='full', thr
     else:
         final, coordinates = infer_image(Image, model, thr=threshold)
     if heatmap == 1:
+        print(np.max(final))
         return final
     sct.printv('post_processing')
     final = np.zeros(shape_im)
@@ -163,8 +164,6 @@ def infer_image(image, model, c=0.02, thr=0.3):
     coord_out = []
     shape_im = image.shape
     final = np.zeros((shape_im[0], shape_im[1]))
-    shape_im = sorted(shape_im)
-    originy = 0
     # retrieve 2-D for transformation (CLAHE & Normalization )
     patch = image[:, :, 0]
     patch = normalize(patch)
@@ -176,15 +175,13 @@ def infer_image(image, model, c=0.02, thr=0.3):
     patch = patch.double()
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
-    plt.imshow(patch_out[0,0,:,:])
+    plt.imshow(patch_out[0, 0, :, :])
     plt.show()
     plt.savefig('heat_test.png')
 
     # retrieveal of coordinates by looking at local max which value are > th determined previously
     coordinates_tmp = peak_local_max(patch_out[0, 0, :, :], min_distance=5, threshold_rel=thr)
-    for w in range(patch.shape[0]):
-        for h in range(patch.shape[1]):
-            final[w, h] = max(final[w, h], patch_out[0, 0, w, h])
+    final = patch_out[0, 0, :, :]
     for x in coordinates_tmp:
         coord_out.append([x[1], x[0]])
     if coord_out == []:

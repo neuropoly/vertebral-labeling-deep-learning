@@ -108,7 +108,7 @@ def main(args=None):
             model.load_state_dict(torch.load('checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
 
         elif contrast == 't2':
-            model.load_state_dict(torch.load('checkpoints/attunet_fullvT2.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('checkpoints/attunet_largeT2.model', map_location='cpu')['model_weights'])
 
         else:
             sct.printv('Error...unknown contrast. please select between t2 and t1.')
