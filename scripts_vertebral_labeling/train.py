@@ -32,7 +32,7 @@ def main():
 
     # put it in the torch loader
     # The 60 first pourcent are for training the 25 next are for validation in an attempt to keep the 15 last for test
-    train_idx = int(np.round(len(full[0]) * 0.75))
+    train_idx = int(np.round(len(full[0]) *0.75))
     validation_idx = int(np.round(len(full[0])))
     print(full[0].shape)
     full[0] = full[0][:, :, :, :, 0]
@@ -51,9 +51,9 @@ def main():
                             num_workers=0)
     print('generating model')
 
-    if conf.model=='CC':
+    if conf['model'] == 'CC':
         model = ModelCountception_v2(inplanes=1, outplanes=1)
-    elif conf['model']=='AttU':
+    elif conf['model'] == 'AttU':
         model = AttU_Net()
 
     if cuda_available:

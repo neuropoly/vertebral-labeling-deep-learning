@@ -19,7 +19,7 @@ import nibabel as nib
 import math
 import sys
 
-sys.path.insert(0, '~/sct/sct/')
+sys.path.insert(0, '../../../sct/sct/')
 from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
 from spinalcordtoolbox.image import Image
 
