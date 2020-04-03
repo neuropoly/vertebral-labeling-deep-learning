@@ -44,11 +44,6 @@ def get_parser():
         action='help',
         help="Show this help message and exit")
     optional.add_argument(
-        '-t',
-        help="threshold",
-        metavar=Metavar.str,
-    )
-    optional.add_argument(
         '-o',
         help="output name",
         metavar=Metavar.str,
@@ -57,6 +52,7 @@ def get_parser():
         '-image',
         help="if 1 Return an image as output,else return coord",
         metavar=Metavar.int,
+        default=0,
     )
     optional.add_argument(
         '-net',
