@@ -1,7 +1,7 @@
 import sys
 import os
 import argparse
-sys.path.insert(0, '~/sct/sct/')
+sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct')
 from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
 from spinalcordtoolbox.image import Image
 from spinalcordtoolbox.utils import Metavar, SmartFormatter
@@ -12,7 +12,7 @@ from models import *
 from test import *
 from Data2array import *
 import numpy as np
-sys.path.insert(0, '~/sct/sct')
+sys.path.insert(0, '../../../sct/sct')
 import nibabel as nib
 
 
@@ -86,10 +86,10 @@ def main(args=None):
         model = model.double()
 
     if contrast == 't1':
-        model.load_state_dict(torch.load('checkpoints/Countception_c2T1.model',)['model_weights'])
+        model.load_state_dict(torch.load('~/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_c2T1.model',)['model_weights'])
 
     elif contrast == 't2':
-        model.load_state_dict(torch.load('checkpoints/Countception_c2.model')['model_weights'])
+        model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_c2.model')['model_weights'])
 
     else:
         sct.printv('Error...unknown contrast. please select between t2 and t1.')
@@ -113,21 +113,20 @@ def main(args=None):
     mask_out = np.zeros(arr.shape)
     if len(coord) < 1 or coord == [0, 0]:
         sct.printv('C2/C3 detection failed. Please provide manual initialisation')
-
-    if arguments.image == 1:
-
-        for x in coord:
-            mask_out[ind, x[1], x[0]] = 10
-        sct.printv('saving image')
-        imsh = arr.shape
-        to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
-        to_save.data = mask_out
-        if arguments.o is not None:
-            to_save.save(arguments.o)
-        else:
-            to_save.save('labels_c2.nii')
+    print(arguments.image)
+   # if int(arguments.image) == 1:
+    for x in coord:
+        mask_out[ind, x[1], x[0]] = 10
+    sct.printv('saving image')
+    imsh = arr.shape
+    to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
+    to_save.data = mask_out
+    if arguments.o is not None:
+        to_save.save(arguments.o)
     else:
-        return coord
+        to_save.save('labels_c2.nii')
+    #else:
+     #   return coord
 
 
 if __name__ == "__main__":

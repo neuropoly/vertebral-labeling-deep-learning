@@ -1,8 +1,9 @@
 num_epochs: 100
-mode: 2 #0 for both t1 and t2 , 1 for t1 only , 2 for t2 only
-path_to_data: '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/Processed_sct_large/'
+mode: 1 #0 for both t1 and t2 , 1 for t1 only , 2 for t2 only
+path_to_data: '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/straight/'
 save_heatmap: 2 #if value X!=0, it will save the thresholded output of the network every X epochs
-saved_model: 'checkpoints/Countception_c2.model' # leave '' will use a default value 
-previous_weights: 'checkpoints/Countception_c2.model' # leave empty if you don't want to use previous weights
+saved_model: 'checkpoints/attunet_C2T1.model' # leave '' will use a default value 
+previous_weights: 'checkpoints/attunet_fullT1.model' # leave empty if you don't want to use previous weights
 patience: 15 # number of epochs without improvement to do before finishing training early.
-c2_or_full: 'c2' # Choose between training only on detecting c2 disc or 'full' to detect all of them.
+c2_or_all: 'c2' # Choose between training only on detecting c2 disc or 'full' to detect all of them.
+model: 'AttU'

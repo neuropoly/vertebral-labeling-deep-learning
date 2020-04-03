@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/home/lucas/sct/')
+sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
 import os
 import argparse
 
@@ -15,7 +15,7 @@ from test import *
 from Data2array import *
 import numpy as np
 
-sys.path.insert(0, '~/sct/')
+sys.path.insert(0, '~/luroub_local/lurou_local/sct/sct/')
 import nibabel as nib
 
 
@@ -93,10 +93,10 @@ def main(args=None):
         model = ModelCountception_v2(inplanes=1, outplanes=1)
 
         if contrast == 't1':
-            model.load_state_dict(torch.load('checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
 
         elif contrast == 't2':
-            model.load_state_dict(torch.load('checkpoints/Countception_L2T2.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_L2T2.model', map_location='cpu')['model_weights'])
 
         else:
             sct.printv('Error...unknown contrast. please select between t2 and t1.')
@@ -105,10 +105,10 @@ def main(args=None):
         model = AttU_Net()
 
         if contrast == 't1':
-            model.load_state_dict(torch.load('checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
 
         elif contrast == 't2':
-            model.load_state_dict(torch.load('checkpoints/attunet_largeT2.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/attunet_largeT2.model', map_location='cpu')['model_weights'])
 
         else:
             sct.printv('Error...unknown contrast. please select between t2 and t1.')
