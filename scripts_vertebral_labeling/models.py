@@ -729,32 +729,32 @@ class ModelCountception_v2(nn.Module):
 
     def forward(self, x):
         net = self.conv1(x)  # 32
-        self._print(net)
+       # self._print(net)
 
         net = self.simple1(net)
 
         # self._print(net)
         net = self.simple2(net)
 
-        self._print(net)
+        #self._print(net)
 
         net = self.conv2(net)
-        self._print(net)
+        #self._print(net)
         net = self.simple3(net)
-        self._print(net)
+        #self._print(net)
         net = self.simple4(net)
-        self._print(net)
+        #self._print(net)
         net = self.simple5(net)
-        self._print(net)
+        #self._print(net)
         net = self.simple6(net)
-        self._print(net)
+        #self._print(net)
         net = self.conv3(net)
-        self._print(net)
+        #self._print(net)
         net = self.conv4(net)
-        self._print(net)
+        #self._print(net)
         net = self.conv5(net)
 
-        self._print(net)
+        #self._print(net)
 
         if self.use_logits:
             net = [c(net) for c in self.conv6]
@@ -762,7 +762,7 @@ class ModelCountception_v2(nn.Module):
         else:
             net = self.conv6(net)
 
-            self._print(net)
+            #self._print(net)
         return net
 
     def name(self):

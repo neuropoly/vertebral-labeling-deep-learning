@@ -87,7 +87,7 @@ def main(args=None):
     model = ModelCountception_v2(inplanes=1, outplanes=1)
     if cuda_available:
         model = model.cuda()
-        model = model.double()
+    model = model.double()
 
     if contrast == 't1':
         model.load_state_dict(torch.load('~/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_c2T1.model',)['model_weights'])

@@ -140,7 +140,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
         list_dir.remove('.DS_Store')
     all_file = len(list_dir)
     if split == 'train':
-        end = int(np.round(all_file * 0.3))
+        end = int(np.round(all_file * 0.8))
         begin = 0
     elif split == 'test':
         begin = int(np.round(all_file * 0.85))
@@ -149,12 +149,12 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
         path_tmp = DataSet_path + list_dir[i] + '/'
         if mode != 2:
             if os.path.exists(path_tmp + 'T1_label-disc-manual_straight.nii.gz'):
-                tmp_label = mask2label(path_tmp + 'T1_label-disc-manual_straight.nii.gz')
+                tmp_label = mask2label(path_tmp + 'T1_label-disc-manual_straight.nii.gz',aim)
             else:
                 continue
         if mode != 1:
             if os.path.exists(path_tmp + 'T2_label-disc-manual_straight.nii.gz'):
-                tmp_label_t2 = mask2label(path_tmp + 'T2_label-disc-manual_straight.nii.gz')
+                tmp_label_t2 = mask2label(path_tmp + 'T2_label-disc-manual_straight.nii.gz',aim)
             else:
                 continue
 
