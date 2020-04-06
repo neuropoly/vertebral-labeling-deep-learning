@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
+sys.path.insert(0, '/home/lucas/sct/')
 import os
 import argparse
 
@@ -15,7 +15,7 @@ from test import *
 from Data2array import *
 import numpy as np
 
-sys.path.insert(0, '~/luroub_local/lurou_local/sct/sct/')
+sys.path.insert(0, '/hom/lucas/sct/')
 import nibabel as nib
 
 
@@ -96,7 +96,7 @@ def main(args=None):
             model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
 
         elif contrast == 't2':
-            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_L2T2.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('checkpoints/Countception_floatL2T2.model', map_location='cpu')['model_weights'])
 
         else:
             sct.printv('Error...unknown contrast. please select between t2 and t1.')
@@ -108,7 +108,7 @@ def main(args=None):
             model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
 
         elif contrast == 't2':
-            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/attunet_largeT2.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('checkpoints/attunet_largeT2.model', map_location='cpu')['model_weights'])
 
         else:
             sct.printv('Error...unknown contrast. please select between t2 and t1.')
@@ -116,7 +116,7 @@ def main(args=None):
 
     if cuda_available:
         model = model.cuda()
-    model = model.double()
+    model = model.float()
 
     sct.printv('retrieving input...')
     Im_input.change_orientation('RPI')
