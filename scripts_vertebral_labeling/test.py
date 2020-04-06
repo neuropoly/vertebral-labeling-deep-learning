@@ -172,7 +172,7 @@ def infer_image(image, model, c=0.02, thr=0.3):
     patch = transforms.ToTensor()(patch).unsqueeze(0)
     if cuda_available:
         patch = patch.cuda()
-    patch = patch.double()
+    patch = patch.float()
     patch_out = model(patch)
     patch_out = patch_out.data.cpu().numpy()
     plt.imshow(patch_out[0, 0, :, :])
