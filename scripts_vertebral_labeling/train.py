@@ -26,6 +26,7 @@ def main():
     path = conf['path_to_data']
     print('load dataset')
     goal = conf['c2_or_all']
+    print(goal)
     ds = load_Data_Bids2Array(path, mode=conf['mode'], split='train', aim=goal)
     print('creating heatmap')
     full = extract_groundtruth_heatmap(ds)
@@ -58,7 +59,7 @@ def main():
 
     if cuda_available:
         model = model.cuda()
-    model = model.double()
+    model = model.float()
 
     if conf['previous_weights'] != '':
         # if path.exist(conf['previous_weights']):
@@ -69,6 +70,7 @@ def main():
 
     # criterion can be loss_l1 or loss_l2
     criterion = loss_l2
+    #model = model.float()
 
     solver = optim.Adam(model.parameters(), lr=0.0005)
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(solver, 32, eta_min=0.00000005, last_epoch=-1)
@@ -81,8 +83,8 @@ def main():
         for epoch in range(conf['num_epochs']):
             for idx, (inputs, target) in enumerate(train_loader):
                 if cuda_available:
-                    inputs = inputs.double().cuda()
-                    target = target.double().cuda()
+                    inputs = inputs.float().cuda()
+                    target = target.float().cuda()
                 output = model.forward(inputs)
                 loss = criterion(output, target)
                 loss_wing = AdapWingLoss(output, target)
@@ -102,8 +104,8 @@ def main():
                 val_loss = []
                 for idx, (inputs, target) in enumerate(val_loader):
                     if cuda_available:
-                        inputs = inputs.double().cuda()
-                        target = target.double().cuda()
+                        inputs = inputs.float().cuda()
+                        target = target.float().cuda()
                     output = model.forward(inputs)
                     # every X epochs we save an image that show the ouput heatmap to check improvement
                     if conf['save_heatmap'] != 0:
