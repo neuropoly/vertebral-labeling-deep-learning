@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/home/lucas/sct/')
+sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct')
 import os
 import argparse
 
@@ -96,7 +96,7 @@ def main(args=None):
             model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
 
         elif contrast == 't2':
-            model.load_state_dict(torch.load('checkpoints/Countception_floatL2T2.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_floatL2T2.model', map_location='cpu')['model_weights'])
 
         else:
             sct.printv('Error...unknown contrast. please select between t2 and t1.')
@@ -108,7 +108,7 @@ def main(args=None):
             model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_L2T1.model', map_location='cpu')['model_weights'])
 
         elif contrast == 't2':
-            model.load_state_dict(torch.load('checkpoints/attunet_largeT2.model', map_location='cpu')['model_weights'])
+            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/attunet_fullT2.model', map_location='cpu')['model_weights'])
 
         else:
             sct.printv('Error...unknown contrast. please select between t2 and t1.')
@@ -142,8 +142,8 @@ def main(args=None):
         #plt.imshow(coord)
         #plt.show()
         #plt.savefig('heat_test.png')
-        sct.printv(np.max(coord))
-        sct.printv(imsh[0], imsh[1], imsh[2])
+        #sct.printv(np.max(coord))
+        #sct.printv(imsh[0], imsh[1], imsh[2])
         to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
         to_save.data[ind, :, :] = coord[:imsh[1], :imsh[2]]
         if arguments.o is not None:
@@ -156,7 +156,7 @@ def main(args=None):
             sct.printv('Error did not work at all, you can try with a different threshold')
 
         for x in coord:
-            mask_out[ind, x[1], x[0]] = 10
+            mask_out[ind, int(x[1]), int(x[0])] = 10
         sct.printv('saving image')
         imsh = arr.shape
         to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)

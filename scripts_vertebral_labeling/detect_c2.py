@@ -1,7 +1,7 @@
 import sys
 import os
 import argparse
-sys.path.insert(0, '/home/lucas/sct')
+sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct')
 from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
 from spinalcordtoolbox.image import Image
 from spinalcordtoolbox.utils import Metavar, SmartFormatter
@@ -89,7 +89,7 @@ def main(args=None):
         model.load_state_dict(torch.load('~/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_c2T1.model', map_location='cpu')['model_weights'])
 
     elif contrast == 't2':
-        model.load_state_dict(torch.load('checkpoints/Countception_floatC2T2.model',map_location='cpu')['model_weights'])
+        model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_floatC2T2.model',map_location='cpu')['model_weights'])
 
     else:
         sct.printv('Error...unknown contrast. please select between t2 and t1.')
