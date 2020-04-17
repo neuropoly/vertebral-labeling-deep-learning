@@ -89,7 +89,7 @@ def main(args=None):
         elif contrast == 't2':
                   model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_floatC2T2.model',map_location='cpu')['model_weights'])
      
-     elif argument.net == 'AttU':
+    elif argument.net == 'AttU':
         model = AttU_Net()
         if contrast == 't1':
             model.load_state_dict(torch.load('~/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/attunet_c2T1.model', map_location='cpu')['model_weights'])
