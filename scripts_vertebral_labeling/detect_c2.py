@@ -1,7 +1,7 @@
 import sys
 import os
 import argparse
-sys.path.insert(0, '/home/lucas/sct')
+sys.path.insert(0, '/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/sct/sct/')
 from spinalcordtoolbox.cropping import ImageCropper, BoundingBox
 from spinalcordtoolbox.image import Image
 from spinalcordtoolbox.utils import Metavar, SmartFormatter
@@ -80,32 +80,44 @@ def main(args=None):
     global cuda_available
     cuda_available = torch.cuda.is_available()
 
-    model = ModelCountception_v2(inplanes=1, outplanes=1)
-    if cuda_available:
-        model = model.cuda()
-    model = model.float()
+    if arguments.net == 'CC':
+        model = ModelCountception_v2(inplanes=1, outplanes=1)
 
-    if contrast == 't1':
-        model.load_state_dict(torch.load('~/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_c2T1.model', map_location='cpu')['model_weights'])
+        if contrast == 't1':
+            model.load_state_dict(torch.load('~/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_floatC2T1.model', map_location='cpu')['model_weights'])
 
-    elif contrast == 't2':
-        model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_floatC2T2.model',map_location='cpu')['model_weights'])
+        elif contrast == 't2':
+                  model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/Countception_floatC2T2.model',map_location='cpu')['model_weights'])
+     
+     elif argument.net == 'AttU':
+        model = AttU_Net()
+        if contrast == 't1':
+            model.load_state_dict(torch.load('~/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/attunet_c2T1.model', map_location='cpu')['model_weights'])
+
+        elif contrast == 't2':
+            model.load_state_dict(torch.load('/home/GRAMES.POLYMTL.CA/luroub/luroub_local/lurou_local/deep_VL_2019/ivado_med/scripts_vertebral_labeling/checkpoints/attunet_c2T2.model',map_location='cpu')['model_weights'])
+
+
+
 
     else:
         sct.printv('Error...unknown contrast. please select between t2 and t1.')
         return 100
+
+    if cuda_available:
+        model = model.cuda()
+    model = model.float()
+
     sct.printv('retrieving input...')
     Im_input.change_orientation('RPI')
     arr = np.array(Im_input.data)
     #debugging
 
-    sct.printv(arr.shape)
     ind = int(np.round(arr.shape[0] / 2))
     inp = np.mean(arr[ind - 2:ind + 2, :, :], 0)
     pad = int(np.ceil(arr.shape[2] / 32))*32
     img_tmp = np.zeros((160, pad), dtype=np.float64)
     img_tmp[0:inp.shape[0], 0:inp.shape[1]] = inp
-    sct.printv(inp.shape)
     inp = np.expand_dims(img_tmp,-1)
     sct.printv('Predicting coordinate')
     
