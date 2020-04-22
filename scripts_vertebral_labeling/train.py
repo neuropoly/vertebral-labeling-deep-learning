@@ -59,7 +59,7 @@ def main():
 
     if cuda_available:
         model = model.cuda()
-    model = model.half()
+    model = model.float()
 
     if conf['previous_weights'] != '':
         # if path.exist(conf['previous_weights']):
@@ -83,8 +83,8 @@ def main():
         for epoch in range(conf['num_epochs']):
             for idx, (inputs, target) in enumerate(train_loader):
                 if cuda_available:
-                    inputs = inputs.half().cuda()
-                    target = target.half().cuda()
+                    inputs = inputs.float().cuda()
+                    target = target.float().cuda()
                 output = model.forward(inputs)
                 loss = criterion(output, target)
                 #loss_wing = AdapWingLoss(output, target)
@@ -104,8 +104,8 @@ def main():
                 val_loss = []
                 for idx, (inputs, target) in enumerate(val_loader):
                     if cuda_available:
-                        inputs = inputs.half().cuda()
-                        target = target.half().cuda()
+                        inputs = inputs.float().cuda()
+                        target = target.float().cuda()
                     output = model.forward(inputs)
                     # every X epochs we save an image that show the ouput heatmap to check improvement
                     if conf['save_heatmap'] != 0:

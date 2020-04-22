@@ -19,7 +19,7 @@ def normalize(arr):
 
 
 # Useful function to generate a Gaussian Function on given coordinates. Used to generate groudtruth.
-def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=10, normalize=False):
+def label2MaskMap_GT(data, shape, c_dx=0, c_dy=0, radius=5, normalize=False):
     """
     Generate a Mask map from the coordenates
     :param shape: dimension of output

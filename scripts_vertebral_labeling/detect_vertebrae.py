@@ -151,12 +151,13 @@ def main(args=None):
         else:
             to_save.save('labels_first_try.nii')
     else:
+        imsh = arr.shape
         mask_out = np.zeros(arr.shape)
         if len(coord) < 2:
             sct.printv('Error did not work at all, you can try with a different threshold')
-
         for x in coord:
-            mask_out[ind, int(x[1]), int(x[0])] = 10
+            if int(x[1]) < imsh[1] and int(x[0]) < imsh[2]:
+                mask_out[ind, int(x[1]), int(x[0])] = 10
         sct.printv('saving image')
         imsh = arr.shape
         to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
