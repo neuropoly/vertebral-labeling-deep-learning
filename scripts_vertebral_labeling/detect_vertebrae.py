@@ -155,9 +155,14 @@ def main(args=None):
         mask_out = np.zeros(arr.shape)
         if len(coord) < 2:
             sct.printv('Error did not work at all, you can try with a different threshold')
+            return(100)
+        coord.sort(key = lambda x: x[0])
+        coord.reverse()
+        i = 3
         for x in coord:
             if int(x[1]) < imsh[1] and int(x[0]) < imsh[2]:
-                mask_out[ind, int(x[1]), int(x[0])] = 10
+                mask_out[ind, int(x[1]), int(x[0])] = i
+                i=i+1
         sct.printv('saving image')
         imsh = arr.shape
         to_save = Image(param=[imsh[0], imsh[1], imsh[2]], hdr=Im_input.header)
