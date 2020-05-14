@@ -140,7 +140,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
         list_dir.remove('.DS_Store')
     all_file = len(list_dir)
     if split == 'train':
-        end = int(np.round(all_file * 0.8))
+        end = int(np.round(all_file * 0.5))
         begin = 0
     elif split == 'test':
         begin = int(np.round(all_file * 0.85))
@@ -153,8 +153,9 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
             else:
                 continue
         if mode != 1:
-            if os.path.exists(path_tmp + 'T2_label-disc-manual_straight.nii.gz'):
-                tmp_label_t2 = mask2label(path_tmp + 'T2_label-disc-manual_straight.nii.gz',aim)
+            print('try')
+            if os.path.exists(path_tmp + list_dir[i] +'_T2w_labels-disc-manual.nii.gz'):
+                tmp_label_t2 = mask2label(path_tmp + list_dir[i]+'_T2w_labels-disc-manual.nii.gz',aim)
             else:
                 continue
 
@@ -165,7 +166,10 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
         if mode != 2:
             mid_slice = get_midNifti(path_tmp + 'T1w_straight.nii.gz', index_mid)
         if mode != 1:
-            mid_slice_t2 = get_midNifti(path_tmp + 'T2W_straight.nii.gz', index_mid)
+            if os.path.exists(path_tmp+list_dir[i]+'_acq-sag_T2w.nii.gz'):
+                mid_slice_t2 = get_midNifti(path_tmp+list_dir[i]+'_acq-sag_T2w.nii.gz', index_mid)
+            elif os.path.exists(path_tmp+list_dir[i]+'_T2w.nii.gz'):
+                mid_slice_t2 = get_midNifti(path_tmp+list_dir[i]+'_T2w.nii.gz', index_mid)
         if mode == 2:
             mid_slice = mid_slice_t2
         if split == 'train':

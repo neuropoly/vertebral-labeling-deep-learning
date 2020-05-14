@@ -26,6 +26,7 @@ def prediction_coordinates(Image, model, coord_gt, i, test=True, aim='full', thr
     shape_im = Image.shape
     shape_im = sorted(shape_im)
     if aim == 'c2':
+        print('ok')
         final, coordinates = infer_image(Image, model, thr=0.99)
     else:
         final, coordinates = infer_image(Image, model, thr=threshold)
@@ -185,7 +186,7 @@ def infer_image(image, model, c=0.02, thr=0.3):
     for x in coordinates_tmp:
         coord_out.append([x[1], x[0]])
     if coord_out == []:
-        coord_out = [0, 0]
+        coord_out = [[0, 0]]
     return (final, coord_out)
 
 
@@ -200,7 +201,7 @@ def main():
     # put image into an array
     # to do put path in a specific conf file
     path = conf['path_to_data']
-    goal = conf['c2 or full']
+    goal = conf['c2_or_full']
     ds = load_Data_Bids2Array(path, mode=conf['mode'], split='test', aim=goal)
     print('extract mid slices')
     full = extract_groundtruth_heatmap(ds)
@@ -222,7 +223,7 @@ def main():
     model = ModelCountception_v2(inplanes=1, outplanes=1)
     if cuda_available:
         model = model.cuda()
-        model = model.double()
+        model = model.float()
         model.load_state_dict(torch.load(conf['weights'])['model_weights'])
     else:
         model = model.double()
@@ -230,7 +231,7 @@ def main():
 
     for i in range(len(coord_gt)):
         print(full[0][i].shape)
-        prediction_coordinates(full[0][i][:, :, :, 0], model, coord_gt, i)
+        prediction_coordinates(full[0][i][:, :, :, 0], model, coord_gt, i,aim=goal)
         # Debuuging print (check gt coordinates) print(coord_gt[i])
         print('processing image {:d} out of {:d}'.format(i + 1, len(coord_gt)))
 

@@ -99,8 +99,6 @@ def extract_groundtruth_heatmap(DataSet):
     """
     [train_ds_img, train_ds_label] = DataSet
 
-    global testing_image
-    testing_image = train_ds_img[-1]
     tmp_train_labels = [0 for i in range(len(train_ds_label))]
     tmp_train_img = [0 for i in range(len(train_ds_label))]
     train_ds_img = np.array(train_ds_img)
