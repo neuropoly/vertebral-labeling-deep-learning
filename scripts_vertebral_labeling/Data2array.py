@@ -140,21 +140,23 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
         list_dir.remove('.DS_Store')
     all_file = len(list_dir)
     if split == 'train':
-        end = int(np.round(all_file * 0.5))
+        end = int(np.round(all_file * 0.9))
         begin = 0
     elif split == 'test':
-        begin = int(np.round(all_file * 0.85))
+        begin = int(np.round(all_file * 0.95))
         end = int(np.round(all_file * 1))
     for i in range(begin, end):
         path_tmp = DataSet_path + list_dir[i] + '/'
         if mode != 2:
-            if os.path.exists(path_tmp + 'T1_label-disc-manual_straight.nii.gz'):
-                tmp_label = mask2label(path_tmp + 'T1_label-disc-manual_straight.nii.gz',aim)
+            if os.path.exists(path_tmp + list_dir[i]+'_T1w_labels-disc-manual.nii.gz'):
+                tmp_label = mask2label(path_tmp + list_dir[i]+'_T1w_labels-disc-manual.nii.gz',aim)
             else:
                 continue
         if mode != 1:
-            print('try')
-            if os.path.exists(path_tmp + list_dir[i] +'_T2w_labels-disc-manual.nii.gz'):
+            print(path_tmp + list_dir[i])
+            if os.path.exists(path_tmp + list_dir[i] +'_T2w_labels-disc-manual_r.nii.gz'):
+                tmp_label_t2 = mask2label(path_tmp + list_dir[i]+'_T2w_labels-disc-manual_r.nii.gz',aim)
+            elif os.path.exists(path_tmp + list_dir[i] +'_T2w_labels-disc-manual.nii.gz'):
                 tmp_label_t2 = mask2label(path_tmp + list_dir[i]+'_T2w_labels-disc-manual.nii.gz',aim)
             else:
                 continue
@@ -164,19 +166,22 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
         else:
             index_mid = tmp_label[0][0]
         if mode != 2:
-            mid_slice = get_midNifti(path_tmp + 'T1w_straight.nii.gz', index_mid)
+            mid_slice = get_midNifti(path_tmp +list_dir[i]+ '_T1w.nii.gz', index_mid)
         if mode != 1:
-            if os.path.exists(path_tmp+list_dir[i]+'_acq-sag_T2w.nii.gz'):
-                mid_slice_t2 = get_midNifti(path_tmp+list_dir[i]+'_acq-sag_T2w.nii.gz', index_mid)
+            if os.path.exists(path_tmp+list_dir[i]+'_acq-sag_T2w_r.nii.gz'):
+                mid_slice_t2 = get_midNifti(path_tmp+list_dir[i]+'_acq-sag_T2w_r.nii.gz', index_mid)
+            elif os.path.exists(path_tmp+list_dir[i]+'_T2w_r.nii.gz'):
+                mid_slice_t2 = get_midNifti(path_tmp+list_dir[i]+'_T2w_r.nii.gz', index_mid)
             elif os.path.exists(path_tmp+list_dir[i]+'_T2w.nii.gz'):
                 mid_slice_t2 = get_midNifti(path_tmp+list_dir[i]+'_T2w.nii.gz', index_mid)
+
         if mode == 2:
             mid_slice = mid_slice_t2
         if split == 'train':
-            if mid_slice.shape[0] > 512:
+            if mid_slice.shape[0] > 450:
                 print('removed')
                 pass
-            elif mid_slice.shape[1] > 512:
+            elif mid_slice.shape[1] > 450:
                 print('removed')
                 pass
             else:
@@ -206,7 +211,7 @@ def load_Data_Bids2Array(DataSet_path, mode=0, split='train', aim='full'):
             if ds_image[i].shape[0] > max_x:
                 max_x = ds_image[i].shape[0]
 
-    ds_image = add_zero_padding(ds_image, x_val=32*(int(np.ceil(max_x/32))), y_val=32*(int(np.ceil(max_y/32))))
+    ds_image = add_zero_padding(ds_image, x_val=(int(np.ceil(max_x))), y_val=(int(np.ceil(max_y))))
     # val_ds_img = add_zero_padding(val_ds_img, x_val=size_val, y_val=size_val)
     # test_ds_img = add_zero_padding(test_ds_img, x_val=size_val, y_val=size_val)
     # Convert images to np.array

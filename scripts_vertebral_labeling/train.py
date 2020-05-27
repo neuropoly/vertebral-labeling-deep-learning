@@ -33,7 +33,7 @@ def main():
 
     # put it in the torch loader
     # The 60 first pourcent are for training the 25 next are for validation in an attempt to keep the 15 last for test
-    train_idx = int(np.round(len(full[0]) *0.75))
+    train_idx = int(np.round(len(full[0]) *0.9))
     validation_idx = int(np.round(len(full[0])))
     print(full[0].shape)
     full[0] = full[0][:, :, :, :, 0]
@@ -127,7 +127,7 @@ def main():
                 print("Epoch", epoch, "- Validation Loss:", np.mean(val_loss))
 
             # best model is saved.
-            if abs(np.mean(val_loss)) < best_val_loss and abs(abs(np.mean(val_loss) - best_val_loss)) > 0.5:
+            if abs(np.mean(val_loss)) < best_val_loss and abs(abs(np.mean(val_loss) - best_val_loss)) > 0.1:
                 print('New best loss, saving...')
                 best_val_loss = copy.deepcopy(abs(np.mean(val_loss)))
                 patience = 0
